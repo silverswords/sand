@@ -19,7 +19,6 @@ type pool struct {
 	active int64
 	max    int64
 	res    chan interface{}
-	close  chan bool
 	closed bool
 }
 
@@ -34,7 +33,6 @@ func New(max int64) (*pool, error) {
 		active: 0,
 		max:    max,
 		res:    make(chan interface{}, max),
-		close:  make(chan bool),
 		closed: false,
 	}, nil
 }
