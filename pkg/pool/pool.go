@@ -2,7 +2,6 @@ package pool
 
 import (
 	"errors"
-	"log"
 	"sync"
 	"sync/atomic"
 )
@@ -15,11 +14,13 @@ type Pool interface {
 }
 
 type pool struct {
-	m      sync.Mutex
-	active int64
-	max    int64
-	res    chan interface{}
-	closed bool
+	m       sync.Mutex
+	wg      sync.WaitGroup
+	active  int64
+	max     int64
+	res     chan interface{}
+	isClose bool
+	closed  chan bool
 }
 
 // New -
@@ -28,37 +29,43 @@ func New(max int64) (*pool, error) {
 		return nil, errors.New("size of the pool is too small")
 	}
 
-	log.Printf("create pool")
-	return &pool{
-		active: 0,
-		max:    max,
-		res:    make(chan interface{}, max),
-		closed: false,
-	}, nil
+	pool := &pool{
+		active:  0,
+		max:     max,
+		res:     make(chan interface{}, max),
+		closed:  make(chan bool),
+		isClose: false,
+	}
+	return pool, nil
 }
 
-func (p *pool) create() (interface{}, error) {
+func (p *pool) create() {
 	atomic.AddInt64(&p.active, 1)
 	obj := p.active
-	return obj, nil
+	p.res <- obj
+	p.wg.Done()
 }
 
 func (p *pool) Get() (interface{}, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	if p.closed {
+	if p.isClose {
 		return nil, errors.New("this pool is closed")
 	}
 
 	select {
 	case r := <-p.res:
-		log.Println("get a resource from pool")
 		return r, nil
 	default:
 		if p.active < p.max {
-			log.Println("get a new one")
-			return p.create()
+			p.wg.Add(1)
+			go p.create()
+
+			select {
+			case r := <-p.res:
+				return r, nil
+			}
 		}
 		return nil, errors.New("pool is empty")
 	}
@@ -70,20 +77,30 @@ func (p *pool) Put(obj interface{}) error {
 
 	select {
 	case p.res <- obj:
-		log.Printf("put conneciton ID: %d back", obj)
 		return nil
 	default:
 		return errors.New("put back error")
 	}
 }
 
-func (p *pool) Close() error {
+func (p *pool) wait() {
 	for {
 		if int64(len(p.res)) == p.active {
-			p.closed = true
-			close(p.res)
-			log.Println("pool close")
-			return nil
+			p.closed <- true
+			return
 		}
 	}
+}
+
+func (p *pool) Close() error {
+	p.isClose = true
+	p.wg.Wait()
+
+	go p.wait()
+
+	<-p.closed
+
+	close(p.res)
+	close(p.closed)
+	return nil
 }
