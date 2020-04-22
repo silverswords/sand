@@ -13,7 +13,7 @@ var (
 )
 
 // BuildProxy -
-func BuildProxy(route *Route) *httputil.ReverseProxy {
+func BuildProxy(route *Route) http.Handler {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			u := req.URL

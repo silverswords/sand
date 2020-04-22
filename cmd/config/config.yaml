@@ -5,3 +5,7 @@ routes:
     type: "group"
     host: 
       - "127.0.0.1:10000"
+  - name: "/mail"
+    type: "group"
+    host: 
+      - "127.0.0.1:10001"

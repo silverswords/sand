@@ -3,6 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +14,7 @@ import (
 func main() {
 	wg := sync.WaitGroup{}
 
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		r := gin.Default()
 		queryG := r.Group("/query")
@@ -31,6 +33,23 @@ func main() {
 	}()
 
 	go func() {
+		r := gin.Default()
+		queryG := r.Group("/mail")
+
+		queryG.GET("/ping", func(c *gin.Context) {
+			a := c.Query("a")
+
+			c.JSON(200, gin.H{
+				"message": "mail:" + a,
+			})
+		})
+
+		r.Run(":10001")
+
+		wg.Done()
+	}()
+
+	go func() {
 		content, err := ioutil.ReadFile("./cmd/config/config.yaml")
 		if err != nil {
 			log.Fatal(err)
@@ -40,23 +59,30 @@ func main() {
 			log.Fatal(err)
 		}
 
-		r := gin.Default()
+		handlerMap := map[string]http.Handler{}
 
 		for i := 0; i < len(c.Routes); i++ {
 			route := &c.Routes[i]
 			log.Printf("route - [%s]\n", route.Name)
 
-			p := proxy.BuildProxy(route)
-
-			gp := r.Group(route.Name)
-			gp.Use(func(c *gin.Context) {
-				log.Printf("[%s]", c.Request.URL.Path)
-				p.ServeHTTP(c.Writer, c.Request)
-			})
-
-			gp.GET("/blackhole", func(c *gin.Context) {
-			})
+			handlerMap[route.Name] = proxy.BuildProxy(route)
 		}
+
+		r := gin.Default()
+
+		r.NoRoute(func(c *gin.Context) {
+			path := c.Request.URL.Path
+			log.Printf("[%s]", path)
+
+			strParts := strings.Split(path, "/")
+			strParts = strParts[0 : len(strParts)-1]
+
+			group := strings.Join(strParts, "/")
+
+			if handler, ok := handlerMap[group]; ok {
+				handler.ServeHTTP(c.Writer, c.Request)
+			}
+		})
 
 		r.Run(":10010")
 
