@@ -1,0 +1,7 @@
+version: "1"
+
+routes:
+  - name: "/query"
+    type: "group"
+    host: 
+      - "127.0.0.1:10000"
