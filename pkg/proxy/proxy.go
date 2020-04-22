@@ -26,8 +26,8 @@ func BuildProxy(route *Route) http.Handler {
 				req.URL.Scheme = "http"
 			}
 
-			req.URL.Host = route.Host[0]
-			req.Host = route.Host[0]
+			req.URL.Host = route.Host
+			req.Host = route.Host
 
 			req.URL.RawPath = u.RawPath
 			req.URL.RawQuery = u.RawQuery

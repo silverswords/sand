@@ -6,9 +6,8 @@ import (
 
 // Route -
 type Route struct {
-	Name string   `yaml:"name,omitempty"`
-	Type string   `yaml:"type" default:"page"`
-	Host []string `yaml:"host,omitempty"`
+	Name string `yaml:"name,omitempty"`
+	Host string `yaml:"host,omitempty"`
 }
 
 // UnmarshalYAML - yaml interface
