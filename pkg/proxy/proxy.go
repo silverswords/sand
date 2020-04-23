@@ -23,7 +23,7 @@ func BuildProxy(route *Route) http.Handler {
 			}
 
 			if req.URL.Scheme == "" {
-				req.URL.Scheme = "http"
+				req.URL.Scheme = route.Scheme
 			}
 
 			req.URL.Host = route.Host
@@ -35,11 +35,11 @@ func BuildProxy(route *Route) http.Handler {
 		},
 		BufferPool: newBufferPool(),
 		ModifyResponse: func(resp *http.Response) error {
-			if resp.StatusCode != http.StatusOK {
-				return errProxyTargetFailed
+			switch resp.StatusCode {
+			case http.StatusSwitchingProtocols, http.StatusOK:
+				return nil
 			}
-
-			return nil
+			return errProxyTargetFailed
 		},
 		ErrorHandler: func(w http.ResponseWriter, req *http.Request, err error) {
 			statusCode := http.StatusInternalServerError

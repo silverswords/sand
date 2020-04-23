@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/silverswords/sand/pkg/proxy"
 )
 
@@ -25,6 +26,32 @@ func main() {
 			c.JSON(200, gin.H{
 				"message": a,
 			})
+		})
+
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		}
+
+		queryG.GET("/ws", func(c *gin.Context) {
+			conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+
+			if err != nil {
+				log.Printf("[WebSocket]Failed to upgrade ws: %+v", err)
+				return
+			}
+
+			for {
+				t, msg, err := conn.ReadMessage()
+				if err != nil {
+					log.Printf("[WebSocket] %+v", err)
+					break
+				}
+				conn.WriteMessage(t, msg)
+			}
 		})
 
 		r.Run(":10000")
