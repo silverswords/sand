@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/golang/glog"
 )
 
 var (
@@ -13,21 +15,22 @@ var (
 )
 
 // BuildProxy -
-func BuildProxy(route *Route) *httputil.ReverseProxy {
+func BuildProxy(route *Route) http.Handler {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			u := req.URL
+			glog.V(2).Info("[Proxy Director] url:", u)
 
 			if parsedURL, err := url.ParseRequestURI(req.RequestURI); err == nil {
 				u = parsedURL
 			}
 
 			if req.URL.Scheme == "" {
-				req.URL.Scheme = "http"
+				req.URL.Scheme = route.Scheme
 			}
 
-			req.URL.Host = route.Host[0]
-			req.Host = route.Host[0]
+			req.URL.Host = route.Host
+			req.Host = route.Host
 
 			req.URL.RawPath = u.RawPath
 			req.URL.RawQuery = u.RawQuery
@@ -35,13 +38,17 @@ func BuildProxy(route *Route) *httputil.ReverseProxy {
 		},
 		BufferPool: newBufferPool(),
 		ModifyResponse: func(resp *http.Response) error {
-			if resp.StatusCode != http.StatusOK {
-				return errProxyTargetFailed
-			}
+			glog.V(2).Info("[Proxy ModifyResponse] url", resp.Request.URL.Path, " status code ", resp.StatusCode)
 
-			return nil
+			switch resp.StatusCode {
+			case http.StatusSwitchingProtocols, http.StatusOK:
+				return nil
+			}
+			return errProxyTargetFailed
 		},
 		ErrorHandler: func(w http.ResponseWriter, req *http.Request, err error) {
+			glog.Error("[Proxy ErrorHandler] url", req.URL.Path, " --> ", err)
+
 			statusCode := http.StatusInternalServerError
 
 			switch {

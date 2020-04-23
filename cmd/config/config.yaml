@@ -2,6 +2,9 @@ version: "1"
 
 routes:
   - name: "/query"
-    type: "group"
-    host: 
-      - "127.0.0.1:10000"
+    host: "127.0.0.1:10000"
+  - name: "/query/ws"
+    host: "127.0.0.1:10000"
+    scheme: "ws"
+  - name: "/mail"
+    host: "127.0.0.1:10001"
