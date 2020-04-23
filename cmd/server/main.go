@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -8,11 +9,14 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang/glog"
 	"github.com/gorilla/websocket"
 	"github.com/silverswords/sand/pkg/proxy"
 )
 
 func main() {
+	flag.Parse()
+
 	wg := sync.WaitGroup{}
 
 	wg.Add(3)
@@ -90,7 +94,7 @@ func main() {
 
 		for i := 0; i < len(c.Routes); i++ {
 			route := &c.Routes[i]
-			log.Printf("route - [%s]\n", route.Name)
+			glog.V(2).Info("[Loading] route - ", route.Name)
 
 			handlerMap[route.Name] = proxy.BuildProxy(route)
 		}
@@ -99,7 +103,7 @@ func main() {
 
 		r.NoRoute(func(c *gin.Context) {
 			path := c.Request.URL.Path
-			log.Printf("[%s]", path)
+			glog.V(2).Info("[Proxy Entry] Path ->", path)
 
 			strParts := strings.Split(path, "/")
 			strParts = strParts[0 : len(strParts)-1]
@@ -117,4 +121,5 @@ func main() {
 	}()
 
 	wg.Wait()
+	glog.Flush()
 }
