@@ -5,6 +5,12 @@ import (
 	"sync"
 )
 
+var (
+	errSizeTooSmall = errors.New("[error] size of the pool is too small")
+	errPoolClosed   = errors.New("[error] pool is closed")
+	errPoolEmpty    = errors.New("[error] pool is empty")
+)
+
 // Pool -
 type Pool struct {
 	lock    sync.Mutex
@@ -18,7 +24,7 @@ type Pool struct {
 // New -
 func New(max int64) (*Pool, error) {
 	if max <= 0 {
-		return nil, errors.New("size of the pool is too small")
+		return nil, errSizeTooSmall
 	}
 
 	pool := &Pool{
@@ -64,7 +70,7 @@ func (p *Pool) Get() (interface{}, error) {
 	defer p.lock.Unlock()
 
 	if p.isClose {
-		return nil, errors.New("this pool is closed")
+		return nil, errPoolClosed
 	}
 
 	select {
@@ -77,7 +83,7 @@ func (p *Pool) Get() (interface{}, error) {
 		}
 	}
 
-	return nil, errors.New("pool is empty")
+	return nil, errPoolEmpty
 }
 
 // Put -
@@ -88,8 +94,6 @@ func (p *Pool) Put(obj interface{}) error {
 	select {
 	case p.res <- obj:
 		return nil
-	default:
-		return errors.New("put back error")
 	}
 }
 
