@@ -3,12 +3,17 @@ package pool
 import (
 	"errors"
 	"sync"
+	"time"
 )
 
 var (
 	errSizeTooSmall = errors.New("[error] size of the pool is too small")
 	errPoolClosed   = errors.New("[error] pool is closed")
 	errPoolEmpty    = errors.New("[error] pool is empty")
+	errTimeout      = errors.New("[error] timeout")
+
+	timerCh      = make(chan bool)
+	isRequsetEnd = make(chan bool)
 )
 
 // Pool -
@@ -19,10 +24,11 @@ type Pool struct {
 	res     chan interface{}
 	isClose bool
 	close   chan bool
+	timer   time.Duration
 }
 
 // New -
-func New(max int64) (*Pool, error) {
+func New(max int64, timer time.Duration) (*Pool, error) {
 	if max <= 0 {
 		return nil, errSizeTooSmall
 	}
@@ -33,6 +39,7 @@ func New(max int64) (*Pool, error) {
 		res:     make(chan interface{}, max),
 		close:   make(chan bool),
 		isClose: false,
+		timer:   timer,
 	}
 
 	go pool.start()
@@ -48,7 +55,6 @@ func (p *Pool) start() {
 			p.lock.Lock()
 			if int64(len(p.res)) == p.active {
 				close(p.res)
-				close(p.close)
 				p.lock.Unlock()
 				return
 			}
@@ -58,10 +64,19 @@ func (p *Pool) start() {
 	}
 }
 
-func (p *Pool) create() interface{} {
+func (p *Pool) create() {
 	p.active++
 	obj := p.active
-	return obj
+	p.res <- obj
+}
+
+func (p *Pool) timeout() {
+	timer := time.NewTimer(p.timer)
+	select {
+	case <-timer.C:
+		timerCh <- true
+	case <-isRequsetEnd:
+	}
 }
 
 // Get -
@@ -73,17 +88,18 @@ func (p *Pool) Get() (interface{}, error) {
 		return nil, errPoolClosed
 	}
 
-	select {
-	case r := <-p.res:
-		return r, nil
-	default:
-		if p.active < p.max {
-			obj := p.create()
-			return obj, nil
-		}
+	if p.active < p.max {
+		p.create()
 	}
 
-	return nil, errPoolEmpty
+	go p.timeout()
+	select {
+	case r := <-p.res:
+		isRequsetEnd <- true
+		return r, nil
+	case <-timerCh:
+		return nil, errTimeout
+	}
 }
 
 // Put -
