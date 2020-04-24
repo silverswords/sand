@@ -50,11 +50,12 @@ func New(max int64, timer time.Duration) (*Pool, error) {
 func (p *Pool) start() {
 	select {
 	case <-p.close:
-		p.isClose = true
 		for {
 			p.lock.Lock()
 			if int64(len(p.res)) == p.active {
+				p.isClose = true
 				close(p.res)
+				close(p.close)
 				p.lock.Unlock()
 				return
 			}
@@ -76,6 +77,7 @@ func (p *Pool) timeout() {
 	case <-timer.C:
 		timerCh <- true
 	case <-isRequsetEnd:
+		return
 	}
 }
 
@@ -95,6 +97,9 @@ func (p *Pool) Get() (interface{}, error) {
 	go p.timeout()
 	select {
 	case r := <-p.res:
+		if p.active < p.max {
+			p.create()
+		}
 		isRequsetEnd <- true
 		return r, nil
 	case <-timerCh:
@@ -114,7 +119,12 @@ func (p *Pool) Put(obj interface{}) error {
 }
 
 // Close -
-func (p *Pool) Close() error {
+func (p *Pool) Close() bool {
 	p.close <- true
-	return nil
+
+	for {
+		if p.isClose {
+			return true
+		}
+	}
 }
