@@ -11,40 +11,41 @@ var (
 	errPoolClosed   = errors.New("[error] pool is closed")
 	errPoolEmpty    = errors.New("[error] pool is empty")
 	errTimeout      = errors.New("[error] timeout")
-
-	timerCh      = make(chan bool)
-	isRequsetEnd = make(chan bool)
 )
 
 // Pool -
 type Pool struct {
-	lock    sync.Mutex
-	active  int64
-	max     int64
-	res     chan interface{}
-	isClose bool
-	close   chan bool
-	interfal   time.Duration
-	creator func() interface{}
+	lock     sync.Mutex
+	active   int64
+	max      int64
+	res      chan interface{}
+	signal   chan bool
+	isClose  bool
+	close    chan bool
+	interval time.Duration
+	creator  func() interface{}
 }
 
 // New -
-func New(max int64, timer time.Duration) (*Pool, error) {
+func New(max int64, timer time.Duration, fn func() interface{}) (*Pool, error) {
 	if max <= 0 {
 		return nil, errSizeTooSmall
 	}
 
 	pool := &Pool{
-		active:  0,
-		max:     max,
-		res:     make(chan interface{}, max),
-		close:   make(chan bool),
-		isClose: false,
-		interval:   timer,
+		active:   0,
+		max:      max,
+		res:      make(chan interface{}, max),
+		close:    make(chan bool),
+		signal:   make(chan bool),
+		isClose:  false,
+		interval: timer,
+		creator:  fn,
 	}
 
-	for i := 0; i < p.max/2; i++ {
-		res <-p.creator()
+	for i := 0; i < int(pool.max/2); i++ {
+		pool.res <- pool.creator()
+		pool.active++
 	}
 
 	go pool.start()
@@ -53,36 +54,26 @@ func New(max int64, timer time.Duration) (*Pool, error) {
 }
 
 func (p *Pool) start() {
-	select {
-	case <-p.close:
-		for {
-			p.lock.Lock()
-			if int64(len(p.res)) == p.active {
-				p.isClose = true
-				close(p.res)
-				close(p.close)
+	for {
+		select {
+		case <-p.close:
+			for {
+				p.lock.Lock()
+				if int64(len(p.res)) == p.active {
+					p.isClose = true
+					close(p.res)
+					close(p.close)
+					close(p.signal)
+					p.lock.Unlock()
+					return
+				}
 				p.lock.Unlock()
-				return
 			}
-			p.lock.Unlock()
+
+		case <-p.signal:
+			p.res <- p.creator()
+			p.active++
 		}
-
-	}
-}
-
-func (p *Pool) create() {
-	p.active++
-	obj := p.active
-	p.res <- obj
-}
-
-func (p *Pool) timeout() {
-	timer := time.NewTimer(p.timer)
-	select {
-	case <-timer.C:
-		timerCh <- true
-	case <-isRequsetEnd:
-		return
 	}
 }
 
@@ -95,19 +86,15 @@ func (p *Pool) Get() (interface{}, error) {
 		return nil, errPoolClosed
 	}
 
-	if p.active < p.max {
-		p.create()
-	}
-
-	go p.timeout()
+	ticker := time.NewTimer(p.interval)
 	select {
 	case r := <-p.res:
+		ticker.Stop()
 		if p.active < p.max {
-			p.create()
+			p.signal <- true
 		}
-		isRequsetEnd <- true
 		return r, nil
-	case <-timerCh:
+	case <-ticker.C:
 		return nil, errTimeout
 	}
 }
@@ -117,10 +104,8 @@ func (p *Pool) Put(obj interface{}) error {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
-	select {
-	case p.res <- obj:
-		return nil
-	}
+	p.res <- obj
+	return nil
 }
 
 // Close -
