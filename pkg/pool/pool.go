@@ -24,7 +24,8 @@ type Pool struct {
 	res     chan interface{}
 	isClose bool
 	close   chan bool
-	timer   time.Duration
+	interfal   time.Duration
+	creator func() interface{}
 }
 
 // New -
@@ -39,7 +40,11 @@ func New(max int64, timer time.Duration) (*Pool, error) {
 		res:     make(chan interface{}, max),
 		close:   make(chan bool),
 		isClose: false,
-		timer:   timer,
+		interval:   timer,
+	}
+
+	for i := 0; i < p.max/2; i++ {
+		res <-p.creator()
 	}
 
 	go pool.start()
