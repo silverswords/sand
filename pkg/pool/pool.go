@@ -7,10 +7,9 @@ import (
 )
 
 var (
-	errSizeTooSmall = errors.New("[error] size of the pool is too small")
-	errPoolClosed   = errors.New("[error] pool is closed")
-	errPoolEmpty    = errors.New("[error] pool is empty")
-	errTimeout      = errors.New("[error] timeout")
+	errSizeTooSmall = errors.New("[error] init: size of the pool is too small")
+	errPoolClosed   = errors.New("[error] get: pool is closed")
+	errTimeout      = errors.New("[error] get: timeout")
 )
 
 // Pool -
@@ -62,7 +61,6 @@ func (p *Pool) start() {
 				if int64(len(p.res)) == p.active {
 					p.isClose = true
 					close(p.res)
-					close(p.close)
 					close(p.signal)
 					p.lock.Unlock()
 					return
@@ -71,8 +69,10 @@ func (p *Pool) start() {
 			}
 
 		case <-p.signal:
-			p.res <- p.creator()
-			p.active++
+			if p.active < p.max {
+				p.res <- p.creator()
+				p.active++
+			}
 		}
 	}
 }
@@ -90,9 +90,7 @@ func (p *Pool) Get() (interface{}, error) {
 	select {
 	case r := <-p.res:
 		ticker.Stop()
-		if p.active < p.max {
-			p.signal <- true
-		}
+		p.signal <- true
 		return r, nil
 	case <-ticker.C:
 		return nil, errTimeout
@@ -109,12 +107,7 @@ func (p *Pool) Put(obj interface{}) error {
 }
 
 // Close -
-func (p *Pool) Close() bool {
+func (p *Pool) Close() {
 	p.close <- true
-
-	for {
-		if p.isClose {
-			return true
-		}
-	}
+	close(p.close)
 }
