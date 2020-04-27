@@ -2,7 +2,6 @@ package pool
 
 import (
 	"errors"
-	"sync"
 	"time"
 )
 
@@ -14,12 +13,10 @@ var (
 
 // Pool -
 type Pool struct {
-	lock     sync.Mutex
 	active   int64
 	max      int64
 	res      chan interface{}
 	signal   chan bool
-	isClose  bool
 	close    chan bool
 	interval time.Duration
 	creator  func() interface{}
@@ -37,7 +34,6 @@ func New(max int64, timer time.Duration, fn func() interface{}) (*Pool, error) {
 		res:      make(chan interface{}, max),
 		close:    make(chan bool),
 		signal:   make(chan bool),
-		isClose:  false,
 		interval: timer,
 		creator:  fn,
 	}
@@ -57,17 +53,12 @@ func (p *Pool) start() {
 		select {
 		case <-p.close:
 			for {
-				p.lock.Lock()
 				if int64(len(p.res)) == p.active {
-					p.isClose = true
 					close(p.res)
 					close(p.signal)
-					p.lock.Unlock()
 					return
 				}
-				p.lock.Unlock()
 			}
-
 		case <-p.signal:
 			if p.active < p.max {
 				p.res <- p.creator()
@@ -79,18 +70,22 @@ func (p *Pool) start() {
 
 // Get -
 func (p *Pool) Get() (interface{}, error) {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-
-	if p.isClose {
+	select {
+	case <-p.close:
 		return nil, errPoolClosed
+	default:
+	}
+
+	select {
+	case r := <-p.res:
+		return r, nil
+	case p.signal <- true:
 	}
 
 	ticker := time.NewTimer(p.interval)
 	select {
 	case r := <-p.res:
 		ticker.Stop()
-		p.signal <- true
 		return r, nil
 	case <-ticker.C:
 		return nil, errTimeout
@@ -99,9 +94,6 @@ func (p *Pool) Get() (interface{}, error) {
 
 // Put -
 func (p *Pool) Put(obj interface{}) error {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-
 	p.res <- obj
 	return nil
 }
