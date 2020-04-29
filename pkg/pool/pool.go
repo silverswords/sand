@@ -71,15 +71,11 @@ func (p *Pool) start() {
 // Get -
 func (p *Pool) Get() (interface{}, error) {
 	select {
-	case <-p.close:
-		return nil, errPoolClosed
-	default:
-	}
-
-	select {
 	case r := <-p.res:
 		return r, nil
 	case p.signal <- true:
+	case <-p.close:
+		return nil, errPoolClosed
 	}
 
 	ticker := time.NewTimer(p.interval)
@@ -89,17 +85,17 @@ func (p *Pool) Get() (interface{}, error) {
 		return r, nil
 	case <-ticker.C:
 		return nil, errTimeout
+	case <-p.close:
+		return nil, errPoolClosed
 	}
 }
 
 // Put -
-func (p *Pool) Put(obj interface{}) error {
+func (p *Pool) Put(obj interface{}) {
 	p.res <- obj
-	return nil
 }
 
 // Close -
 func (p *Pool) Close() {
-	p.close <- true
 	close(p.close)
 }
