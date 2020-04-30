@@ -52,10 +52,10 @@ func (p *Pool) start() {
 	for {
 		select {
 		case <-p.close:
+			close(p.signal)
 			for {
 				if int64(len(p.res)) == p.active {
 					close(p.res)
-					close(p.signal)
 					return
 				}
 			}
