@@ -15,15 +15,20 @@ var (
 type Pool struct {
 	active   int64
 	max      int64
-	res      chan interface{}
+	res      chan Poolable
 	signal   chan bool
 	close    chan bool
 	interval time.Duration
-	creator  func() interface{}
+	creator  func() Poolable
+}
+
+// Poolable -
+type Poolable interface {
+	Expire() time.Time
 }
 
 // New -
-func New(max int64, timer time.Duration, fn func() interface{}) (*Pool, error) {
+func New(max int64, timer time.Duration, fn func() Poolable) (*Pool, error) {
 	if max <= 0 {
 		return nil, errSizeTooSmall
 	}
@@ -31,7 +36,7 @@ func New(max int64, timer time.Duration, fn func() interface{}) (*Pool, error) {
 	pool := &Pool{
 		active:   0,
 		max:      max,
-		res:      make(chan interface{}, max),
+		res:      make(chan Poolable, max),
 		close:    make(chan bool),
 		signal:   make(chan bool),
 		interval: timer,
@@ -52,9 +57,9 @@ func (p *Pool) start() {
 	for {
 		select {
 		case <-p.close:
-			close(p.signal)
 			for {
 				if int64(len(p.res)) == p.active {
+					close(p.signal)
 					close(p.res)
 					return
 				}
@@ -69,13 +74,13 @@ func (p *Pool) start() {
 }
 
 // Get -
-func (p *Pool) Get() (interface{}, error) {
+func (p *Pool) Get() (Poolable, error) {
 	select {
 	case r := <-p.res:
 		return r, nil
-	case p.signal <- true:
 	case <-p.close:
 		return nil, errPoolClosed
+	case p.signal <- true:
 	}
 
 	ticker := time.NewTimer(p.interval)
@@ -91,7 +96,7 @@ func (p *Pool) Get() (interface{}, error) {
 }
 
 // Put -
-func (p *Pool) Put(obj interface{}) {
+func (p *Pool) Put(obj Poolable) {
 	p.res <- obj
 }
 
