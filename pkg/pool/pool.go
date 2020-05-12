@@ -2,33 +2,37 @@ package pool
 
 import (
 	"errors"
+	"fmt"
 	"time"
+
+	"sync/atomic"
 )
 
 var (
 	errSizeTooSmall = errors.New("[error] init: size of the pool is too small")
 	errPoolClosed   = errors.New("[error] get: pool is closed")
 	errTimeout      = errors.New("[error] get: timeout")
+	errAllExpire    = errors.New("[error] pool: all expire")
 )
 
 // Pool -
 type Pool struct {
 	active   int64
 	max      int64
-	res      chan Poolable
+	res      chan Element
 	signal   chan bool
 	close    chan bool
 	interval time.Duration
-	creator  func() Poolable
+	creator  func() Element
 }
 
-// Poolable -
-type Poolable interface {
-	Expire() time.Time
+// Element -
+type Element interface {
+	Expire() bool
 }
 
 // New -
-func New(max int64, timer time.Duration, fn func() Poolable) (*Pool, error) {
+func New(max int64, timer time.Duration, fn func() Element) (*Pool, error) {
 	if max <= 0 {
 		return nil, errSizeTooSmall
 	}
@@ -36,7 +40,7 @@ func New(max int64, timer time.Duration, fn func() Poolable) (*Pool, error) {
 	pool := &Pool{
 		active:   0,
 		max:      max,
-		res:      make(chan Poolable, max),
+		res:      make(chan Element, max),
 		close:    make(chan bool),
 		signal:   make(chan bool),
 		interval: timer,
@@ -67,17 +71,42 @@ func (p *Pool) start() {
 		case <-p.signal:
 			if p.active < p.max {
 				p.res <- p.creator()
-				p.active++
+				// p.active++
+				atomic.AddInt64(&p.active, 1)
+				fmt.Println(p.active, "++++++")
 			}
 		}
 	}
 }
 
+func (p *Pool) check(element Element) (Element, error) {
+	if element.Expire() {
+		atomic.AddInt64(&p.active, -1)
+		fmt.Println(p.active, "------")
+		if p.active == 0 {
+			return nil, errAllExpire
+		}
+
+		ele, err := p.Get()
+		if err != nil {
+			return nil, errAllExpire
+		}
+
+		return ele, nil
+	}
+
+	return element, nil
+}
+
 // Get -
-func (p *Pool) Get() (Poolable, error) {
+func (p *Pool) Get() (Element, error) {
 	select {
-	case r := <-p.res:
-		return r, nil
+	case element := <-p.res:
+		ele, err := p.check(element)
+		if err != nil {
+			return nil, err
+		}
+		return ele, nil
 	case <-p.close:
 		return nil, errPoolClosed
 	case p.signal <- true:
@@ -85,9 +114,9 @@ func (p *Pool) Get() (Poolable, error) {
 
 	ticker := time.NewTimer(p.interval)
 	select {
-	case r := <-p.res:
+	case element := <-p.res:
 		ticker.Stop()
-		return r, nil
+		return element, nil
 	case <-ticker.C:
 		return nil, errTimeout
 	case <-p.close:
@@ -96,8 +125,8 @@ func (p *Pool) Get() (Poolable, error) {
 }
 
 // Put -
-func (p *Pool) Put(obj Poolable) {
-	p.res <- obj
+func (p *Pool) Put(element Element) {
+	p.res <- element
 }
 
 // Close -
