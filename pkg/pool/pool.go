@@ -2,7 +2,6 @@ package pool
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"sync/atomic"
@@ -71,9 +70,7 @@ func (p *Pool) start() {
 		case <-p.signal:
 			if p.active < p.max {
 				p.res <- p.creator()
-				// p.active++
-				atomic.AddInt64(&p.active, 1)
-				fmt.Println(p.active, "++++++")
+				p.active++
 			}
 		}
 	}
@@ -82,7 +79,6 @@ func (p *Pool) start() {
 func (p *Pool) check(element Element) (Element, error) {
 	if element.Expire() {
 		atomic.AddInt64(&p.active, -1)
-		fmt.Println(p.active, "------")
 		if p.active == 0 {
 			return nil, errAllExpire
 		}
