@@ -70,7 +70,7 @@ func GetAllProduce() ([]*structs.Product, error) {
 	var result []*structs.Product
 	for rows.Next() {
 		var (
-			pro_id   uint64
+			pro_id   string
 			price    float64
 			subtitle string
 			images   interface{}
@@ -93,9 +93,9 @@ func GetAllProduce() ([]*structs.Product, error) {
 }
 
 // GetProductByID detial info in product page, got by id
-func GetProductInfoByID(productID uint64) (*structs.Product, error) {
+func GetProductInfoByID(productID string) (*structs.Product, error) {
 	var (
-		pro_id       uint64
+		pro_id       string
 		price        float64
 		main_title   string
 		subtitle     string
@@ -128,7 +128,7 @@ func GetProductInfoByID(productID uint64) (*structs.Product, error) {
 }
 
 // VirtualStoreProduct get virtual store's products by storeID
-func GetVirtualStoreProsByID(storeID uint64) ([]*structs.Product, error) {
+func GetVirtualStoreProsByID(storeID string) ([]*structs.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductOfVirtualStore], storeID)
 	if err != nil {
 		return nil, err
@@ -137,7 +137,7 @@ func GetVirtualStoreProsByID(storeID uint64) ([]*structs.Product, error) {
 	var result []*structs.Product
 	for rows.Next() {
 		var (
-			pro_id       uint64
+			pro_id       string
 			price        float64
 			main_title   string
 			subtitle     string

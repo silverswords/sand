@@ -17,8 +17,8 @@ func RegisterOrder(r gin.IRouter) {
 	r.POST("/insert", insertOrder)
 	r.POST("/modify/status", modifyOrderStatus)
 	r.GET("/brifeInfoByOpenID", getOrderBrifeInfoByOpenID)
-	r.GET("brifeInfoByStoreID", getOrderBrifeInfoByStoreID)
-	r.GET("detail", getOrderDetialByOrderID)
+	r.GET("/brifeInfoByStoreID", getOrderBrifeInfoByStoreID)
+	r.GET("/detail", getOrderDetialByOrderID)
 }
 
 func insertOrder(ctx *gin.Context) {
