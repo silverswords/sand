@@ -71,7 +71,7 @@ func GetAllProduce(db *sql.DB) ([]*models.Product, error) {
 	var result []*models.Product
 	for rows.Next() {
 		var (
-			pro_id   uint32
+			pro_id   uint64
 			price    float64
 			subtitle string
 			images   interface{}
@@ -94,14 +94,14 @@ func GetAllProduce(db *sql.DB) ([]*models.Product, error) {
 }
 
 // GetProductByID detial info in product page, got by id
-func GetProductInfoByID(db *sql.DB, productID uint32) (*models.Product, error) {
+func GetProductInfoByID(db *sql.DB, productID uint64) (*models.Product, error) {
 	var (
-		pro_id       uint32
+		pro_id       uint64
 		price        float64
 		main_title   string
 		subtitle     string
 		images       interface{}
-		stock        uint32
+		stock        uint64
 		status       uint8
 		created_time string
 
@@ -129,7 +129,7 @@ func GetProductInfoByID(db *sql.DB, productID uint32) (*models.Product, error) {
 }
 
 // VirtualStoreProduct get virtual store's products by storeID
-func GetVirtualStoreProsByID(db *sql.DB, storeID uint32) ([]*models.Product, error) {
+func GetVirtualStoreProsByID(db *sql.DB, storeID uint64) ([]*models.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductOfVirtualStore], storeID)
 	if err != nil {
 		return nil, err
@@ -138,12 +138,12 @@ func GetVirtualStoreProsByID(db *sql.DB, storeID uint32) ([]*models.Product, err
 	var result []*models.Product
 	for rows.Next() {
 		var (
-			pro_id       uint32
+			pro_id       uint64
 			price        float64
 			main_title   string
 			subtitle     string
 			images       interface{}
-			stock        uint32
+			stock        uint64
 			status       uint8
 			created_time string
 		)
