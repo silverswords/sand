@@ -15,5 +15,10 @@ type Server struct {
 }
 
 func (s *Server) Start() error {
+	err := s.server.Serve(s.listener)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

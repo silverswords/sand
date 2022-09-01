@@ -2,8 +2,12 @@ package web
 
 import (
 	"io/ioutil"
+	"net"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	json "github.com/json-iterator/go"
+	controller "github.com/silverswords/sand/controller/gin"
 )
 
 type Builder struct {
@@ -40,7 +44,27 @@ func (b *Builder) Build(opts ...Option) *Builder {
 }
 
 func (b *Builder) Run() *Server {
-	s := &Server{}
+	listener, err := net.Listen("tcp", b.Host+":"+b.Config.Addr)
+	if err != nil {
+		panic(err)
+	}
 
-	return s
+	engine := gin.Default()
+	registerRouter(engine)
+
+	return &Server{
+		Engine: engine,
+
+		server: http.Server{
+			Handler: engine,
+		},
+
+		listener: listener,
+	}
+}
+
+func registerRouter(engine *gin.Engine) {
+	routerBasicGroup := engine.Group("/api/v1")
+
+	controller.RegisterTest(routerBasicGroup.Group("test"))
 }
