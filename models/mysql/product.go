@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	models "github.com/silverswords/sand/models"
+	"github.com/silverswords/sand/models/structs"
 )
 
 const ProductTableName = "product"
@@ -50,7 +50,7 @@ func CreateProductTable(db *sql.DB) error {
 }
 
 // InsertProduct insert product into the table
-func InsertProduct(product models.Product) error {
+func InsertProduct(product structs.Product) error {
 	_, err := db.Exec(productSQLString[mysqlInsertProduct], product.ProID,
 		product.StoreID, product.Price, product.MainTitle, product.Subtitle,
 		product.Images, product.Stock, product.Status)
@@ -62,13 +62,13 @@ func InsertProduct(product models.Product) error {
 }
 
 // GetAll get all brife products info to homepage
-func GetAllProduce(db *sql.DB) ([]*models.Product, error) {
+func GetAllProduce(db *sql.DB) ([]*structs.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductBrifeInfo])
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Product
+	var result []*structs.Product
 	for rows.Next() {
 		var (
 			pro_id   uint64
@@ -81,7 +81,7 @@ func GetAllProduce(db *sql.DB) ([]*models.Product, error) {
 			return nil, err
 		}
 
-		result = append(result, &models.Product{
+		result = append(result, &structs.Product{
 			ProID:    pro_id,
 			Price:    price,
 			Subtitle: subtitle,
@@ -94,7 +94,7 @@ func GetAllProduce(db *sql.DB) ([]*models.Product, error) {
 }
 
 // GetProductByID detial info in product page, got by id
-func GetProductInfoByID(db *sql.DB, productID uint64) (*models.Product, error) {
+func GetProductInfoByID(db *sql.DB, productID uint64) (*structs.Product, error) {
 	var (
 		pro_id       uint64
 		price        float64
@@ -105,7 +105,7 @@ func GetProductInfoByID(db *sql.DB, productID uint64) (*models.Product, error) {
 		status       uint8
 		created_time string
 
-		result *models.Product
+		result *structs.Product
 	)
 
 	err := db.QueryRow(productSQLString[mysqlProductdetialInfo], productID).Scan(&pro_id, &price, &main_title,
@@ -114,7 +114,7 @@ func GetProductInfoByID(db *sql.DB, productID uint64) (*models.Product, error) {
 		return nil, err
 	}
 
-	result = &models.Product{
+	result = &structs.Product{
 		ProID:      pro_id,
 		Price:      price,
 		MainTitle:  main_title,
@@ -129,13 +129,13 @@ func GetProductInfoByID(db *sql.DB, productID uint64) (*models.Product, error) {
 }
 
 // VirtualStoreProduct get virtual store's products by storeID
-func GetVirtualStoreProsByID(db *sql.DB, storeID uint64) ([]*models.Product, error) {
+func GetVirtualStoreProsByID(db *sql.DB, storeID uint64) ([]*structs.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductOfVirtualStore], storeID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.Product
+	var result []*structs.Product
 	for rows.Next() {
 		var (
 			pro_id       uint64
@@ -151,7 +151,7 @@ func GetVirtualStoreProsByID(db *sql.DB, storeID uint64) ([]*models.Product, err
 			return nil, err
 		}
 
-		result = append(result, &models.Product{
+		result = append(result, &structs.Product{
 			ProID:      pro_id,
 			Price:      price,
 			MainTitle:  main_title,

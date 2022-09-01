@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/silverswords/sand/models"
+	"github.com/silverswords/sand/models/structs"
 )
 
 const OrderTableName = "order"
@@ -46,7 +46,7 @@ func CreateOrderTable(db *sql.DB) error {
 }
 
 // Insert an order
-func InsertOrder(order models.Order) error {
+func InsertOrder(order structs.Order) error {
 	_, err := db.Exec(orderSQLString[mysqlInsertOrder], order.OrderID, order.StoreID,
 		order.ProID, order.OpenID, order.Count, order.TotalPrice, order.Status)
 	if err != nil {

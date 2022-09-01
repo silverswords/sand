@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/silverswords/sand/models"
+	"github.com/silverswords/sand/models/structs"
 )
 
 const VirtualStoreTableName = "vstore"
@@ -42,7 +42,7 @@ func CheckVStoreIsExist(db, store_id string) {
 }
 
 // Eight nums in total, first six nums are set by admin, two nums left are random nums
-func InsertVStore(db *sql.DB, vs models.VirtualStore) error {
+func InsertVStore(db *sql.DB, vs structs.VirtualStore) error {
 	// rand.Seed(time.Now().UnixNano())
 	// store_id := fmt.Sprintf("%s%d%d", vs.StoreID, rand.Intn(10), rand.Intn(10))
 
@@ -55,13 +55,13 @@ func InsertVStore(db *sql.DB, vs models.VirtualStore) error {
 }
 
 // Get all virtual stores info, only show first six nums
-func GetAllVirtualStores(db *sql.DB) ([]*models.VirtualStore, error) {
+func GetAllVirtualStores(db *sql.DB) ([]*structs.VirtualStore, error) {
 	rows, err := db.Query(virtualStoreSQLString[mysqlGetAllVirtualStores])
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*models.VirtualStore
+	var result []*structs.VirtualStore
 	for rows.Next() {
 		var (
 			store_name string
@@ -72,7 +72,7 @@ func GetAllVirtualStores(db *sql.DB) ([]*models.VirtualStore, error) {
 		}
 		//store_id = store_id[0:6]
 
-		result = append(result, &models.VirtualStore{
+		result = append(result, &structs.VirtualStore{
 			StoreName: store_name,
 			StoreID:   store_id,
 		})
