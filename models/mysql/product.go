@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/silverswords/sand/models/structs"
@@ -14,14 +13,14 @@ const (
 	mysqlInsertProduct
 	mysqlProductBrifeInfo
 	mysqlProductdetialInfo
-	mysqlProductOfVirtualStore // get product info by virtual store ID
+	mysqlProductOfVirtualStore
 )
 
 var (
 	productSQLString = []string{
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-			pro_id 			BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			store_id		BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			pro_id 			VARCHAR(128) UNIQUE NOT NULL,
+			store_id		VARCHAR(128) UNIQUE NOT NULL,
 			price			DOUBLE NOT NULL DEFAULT 9999.99,
 			main_title		VARCHAR(100) NOT NULL DEFAULT " ",
 			subtitle		VARCHAR(100) NOT NULL DEFAULT " ",
@@ -40,7 +39,7 @@ var (
 )
 
 // CreateTable create product table
-func CreateProductTable(db *sql.DB) error {
+func CreateProductTable() error {
 	_, err := db.Exec(productSQLString[mysqlCreateProductTable])
 	if err != nil {
 		return err
@@ -62,7 +61,7 @@ func InsertProduct(product structs.Product) error {
 }
 
 // GetAll get all brife products info to homepage
-func GetAllProduce(db *sql.DB) ([]*structs.Product, error) {
+func GetAllProduce() ([]*structs.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductBrifeInfo])
 	if err != nil {
 		return nil, err
@@ -94,7 +93,7 @@ func GetAllProduce(db *sql.DB) ([]*structs.Product, error) {
 }
 
 // GetProductByID detial info in product page, got by id
-func GetProductInfoByID(db *sql.DB, productID uint64) (*structs.Product, error) {
+func GetProductInfoByID(productID uint64) (*structs.Product, error) {
 	var (
 		pro_id       uint64
 		price        float64
@@ -129,7 +128,7 @@ func GetProductInfoByID(db *sql.DB, productID uint64) (*structs.Product, error) 
 }
 
 // VirtualStoreProduct get virtual store's products by storeID
-func GetVirtualStoreProsByID(db *sql.DB, storeID uint64) ([]*structs.Product, error) {
+func GetVirtualStoreProsByID(storeID uint64) ([]*structs.Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductOfVirtualStore], storeID)
 	if err != nil {
 		return nil, err

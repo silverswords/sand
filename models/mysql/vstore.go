@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/silverswords/sand/models/structs"
@@ -13,13 +12,12 @@ const (
 	mysqlCreateVStoreTable = iota
 	mysqlInsertVStore
 	mysqlGetAllVirtualStores
-	mysqlVStoreIsExist
 )
 
 var (
 	virtualStoreSQLString = []string{
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-			store_name	VARCHAR(100) NOT NULL,
+			store_name	VARCHAR(100) NOT NULL UNIQUE,
 			store_id	VARCHAR(20) NOT NULL,
 			PRIMARY KEY (store_id)
 		)  ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`, VirtualStoreTableName),
@@ -28,7 +26,7 @@ var (
 	}
 )
 
-func CreateVStoreTable(db *sql.DB) error {
+func CreateVStoreTable() error {
 	_, err := db.Query(virtualStoreSQLString[mysqlCreateOrderTable])
 	if err != nil {
 		return err
@@ -37,15 +35,8 @@ func CreateVStoreTable(db *sql.DB) error {
 	return nil
 }
 
-func CheckVStoreIsExist(db, store_id string) {
-
-}
-
-// Eight nums in total, first six nums are set by admin, two nums left are random nums
-func InsertVStore(db *sql.DB, vs structs.VirtualStore) error {
-	// rand.Seed(time.Now().UnixNano())
-	// store_id := fmt.Sprintf("%s%d%d", vs.StoreID, rand.Intn(10), rand.Intn(10))
-
+// Create a new virtual store, get all info from admin
+func InsertVStore(vs structs.VirtualStore) error {
 	_, err := db.Exec(virtualStoreSQLString[mysqlInsertVStore], vs.StoreName, vs.StoreID)
 	if err != nil {
 		return err
@@ -54,8 +45,8 @@ func InsertVStore(db *sql.DB, vs structs.VirtualStore) error {
 	return nil
 }
 
-// Get all virtual stores info, only show first six nums
-func GetAllVirtualStores(db *sql.DB) ([]*structs.VirtualStore, error) {
+// Get all virtual stores info, show them to the admin
+func GetAllVirtualStores() ([]*structs.VirtualStore, error) {
 	rows, err := db.Query(virtualStoreSQLString[mysqlGetAllVirtualStores])
 	if err != nil {
 		return nil, err
@@ -70,7 +61,6 @@ func GetAllVirtualStores(db *sql.DB) ([]*structs.VirtualStore, error) {
 		if err := rows.Scan(&store_name, &store_id); err != nil {
 			return nil, err
 		}
-		//store_id = store_id[0:6]
 
 		result = append(result, &structs.VirtualStore{
 			StoreName: store_name,
