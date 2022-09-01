@@ -10,3 +10,8 @@ type Order struct {
 	Status     uint8   `json:"status,omitempty"`
 	CreateTime string  `json:"create_time"`
 }
+
+type OrderStatus struct {
+	OrderID string `json:"order_id,omitempty"`
+	Status  uint8  `json:"status,omitempty"`
+}
