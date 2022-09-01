@@ -3,7 +3,6 @@ package mysql
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/silverswords/sand/models/structs"
 )
@@ -31,13 +30,13 @@ var (
 			modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (union_id)
 		) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`, TableName),
-		fmt.Sprintf(`INSERT INTO %s (union_id, open_id)  VALUES (?,?)`, TableName),
+		fmt.Sprintf(`INSERT INTO %s (union_id, open_id, mobile)  VALUES (?,?,?)`, TableName),
 		fmt.Sprintf(`UPDATE %s SET mobile=?, modified_at=? WHERE union_id = ? LIMIT 1`, TableName),
 		fmt.Sprintf(`SELECT mobile FROM %s WHERE union_id = ? LOCK IN SHARE MODE`, TableName),
 	}
 )
 
-func CreateTable() error {
+func CreateUserTable() error {
 	_, err := db.Exec(userSQLString[mysqlUserCreateTable])
 	if err != nil {
 		return err
@@ -46,8 +45,8 @@ func CreateTable() error {
 	return nil
 }
 
-func CreateUser(union_id, open_id string) error {
-	result, err := db.Exec(userSQLString[mysqlUserInsert], union_id, open_id)
+func InsertUser(user structs.User) error {
+	result, err := db.Exec(userSQLString[mysqlUserInsert], user.UnionID, user.OpenID, user.Mobile)
 	if err != nil {
 		return err
 	}
@@ -57,32 +56,4 @@ func CreateUser(union_id, open_id string) error {
 	}
 
 	return nil
-}
-
-func ModifyMobile(union_id string, time time.Time, mobile string) error {
-	result, err := db.Exec(userSQLString[mysqlUserModifyMobile], mobile, time, union_id)
-	if err != nil {
-		return err
-	}
-
-	if rows, _ := result.RowsAffected(); rows == 0 {
-		return errInvalidMysql
-	}
-
-	return nil
-}
-
-func GetUserInfo(union_id string) (*structs.User, error) {
-	var (
-		mobile string
-	)
-
-	err := db.QueryRow(userSQLString[mysqlUserGetInfo], union_id).Scan(&mobile)
-	if err != nil {
-		return nil, err
-	}
-
-	return &structs.User{
-		Mobile: mobile,
-	}, nil
 }

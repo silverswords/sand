@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	mysql "github.com/silverswords/sand/models/mysql"
@@ -11,27 +10,16 @@ import (
 
 func main() {
 	user := structs.User{
-		UnionId: "UnionId_test",
-		OpenId:  "OpenId_test",
+		UnionID: "UnionID_test",
+		OpenID:  "OpenID_test",
 		Mobile:  "123456",
 	}
 
-	if err := mysql.CreateTable(); err != nil {
+	if err := mysql.CreateUserTable(); err != nil {
 		fmt.Println(err)
 	}
 
-	if err := mysql.CreateUser(user.UnionId, user.OpenId); err != nil {
+	if err := mysql.InsertUser(user); err != nil {
 		fmt.Println(err)
 	}
-
-	if err := mysql.ModifyMobile(user.UnionId, time.Now(), user.Mobile); err != nil {
-		fmt.Println(err)
-	}
-
-	userInfo, err := mysql.GetUserInfo(user.UnionId)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Printf("Mobile: %s", userInfo.Mobile)
 }

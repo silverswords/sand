@@ -1,7 +1,7 @@
 package structs
 
 type User struct {
-	UnionId string
-	OpenId  string
+	UnionID string
+	OpenID  string
 	Mobile  string
 }
