@@ -66,5 +66,7 @@ func (b *Builder) Run() *Server {
 func registerRouter(engine *gin.Engine) {
 	routerBasicGroup := engine.Group("/api/v1")
 
-	controller.RegisterTest(routerBasicGroup.Group("test"))
+	controller.RegisterOrder(routerBasicGroup.Group("order"))
+	controller.RegisterProduct(routerBasicGroup.Group("product"))
+	controller.RegisterUser(routerBasicGroup.Group("user"))
 }

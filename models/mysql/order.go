@@ -6,7 +6,7 @@ import (
 	"github.com/silverswords/sand/models/structs"
 )
 
-const OrderTableName = "order"
+const OrderTableName = "orders"
 
 const (
 	mysqlCreateOrderTable = iota
