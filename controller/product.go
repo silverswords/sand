@@ -26,25 +26,25 @@ func (c *ProductController) RegisterProduct(r gin.IRouter) {
 	}
 
 	r.GET("/insert", c.insertProduct)
-	r.GET("/getAll", c.getAllProduct)
-	r.GET("/getInfoByID", c.getProductInfoByID)
-	r.GET("/getVirtualStorePros", c.getVirtualStorePros)
+	r.GET("/list", c.getAllProduct)
+	r.GET("/detail", c.getProductInfoByID)
+	r.GET("/virtualStorePros", c.getVirtualStorePros)
 }
 
 func (c *ProductController) insertProduct(ctx *gin.Context) {
 	var (
 		req struct {
-			ProductID  string      `json:"pro_id,omitempty"`
-			StoreID    string      `json:"store_id,omitempty"`
-			Price      float64     `json:"price,omitempty"`
-			MainTitle  string      `json:"main_title,omitempty"`
-			Subtitle   string      `json:"subtitle,omitempty"`
-			Images     interface{} `json:"images,omitempty"`
-			Stock      uint32      `json:"stock,omitempty"`
-			Status     uint8       `json:"status,omitempty"`
-			CreateTime string      `json:"create_time,omitempty"`
+			ProductID string      `json:"pro_id,omitempty"`
+			StoreID   string      `json:"store_id,omitempty"`
+			Price     float64     `json:"price,omitempty"`
+			MainTitle string      `json:"main_title,omitempty"`
+			Subtitle  string      `json:"subtitle,omitempty"`
+			Images    interface{} `json:"images,omitempty"`
+			Stock     uint32      `json:"stock,omitempty"`
+			Status    uint8       `json:"status,omitempty"`
 		}
 	)
+
 	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -74,7 +74,7 @@ func (c *ProductController) getAllProduct(ctx *gin.Context) {
 func (c *ProductController) getProductInfoByID(ctx *gin.Context) {
 	var (
 		req struct {
-			productID string
+			ProductID string `json:"product_id"`
 		}
 	)
 
@@ -84,7 +84,7 @@ func (c *ProductController) getProductInfoByID(ctx *gin.Context) {
 		return
 	}
 
-	detial, err := models.GetProductInfoByID(c.db, req.productID)
+	detial, err := models.GetProductInfoByID(c.db, req.ProductID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -95,15 +95,19 @@ func (c *ProductController) getProductInfoByID(ctx *gin.Context) {
 }
 
 func (c *ProductController) getVirtualStorePros(ctx *gin.Context) {
-	var virtualStoreID string
+	var (
+		req struct {
+			VirtualStoreID string `json:"virtual_store_id"`
+		}
+	)
 
-	if err := ctx.ShouldBind(&virtualStoreID); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
 
-	brifeInfo, err := models.GetVirtualStoreProsByID(c.db, virtualStoreID)
+	brifeInfo, err := models.GetVirtualStoreProsByID(c.db, req.VirtualStoreID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
