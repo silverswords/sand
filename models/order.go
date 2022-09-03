@@ -38,22 +38,22 @@ var (
 )
 
 type Order struct {
-	OrderID    uint32  `json:"order_id,omitempty"`
-	UserID     uint64  `json:"open_id,omitempty"`
-	ProductID  string  `json:"pro_id,omitempty"`
-	StoreID    string  `json:"store_id,omitempty"`
-	Quantity   uint32  `json:"count,omitempty"`
-	TotalPrice float64 `json:"total_price,omitempty"`
-	Status     uint8   `json:"status,omitempty"`
-	CreateTime string  `json:"create_time"`
+	OrderID    uint32
+	UserID     uint64
+	ProductID  string
+	StoreID    string
+	Quantity   uint32
+	TotalPrice float64
+	Status     uint8
+	CreateTime string
 }
 
 type Item struct {
-	OrderID    uint32  `json:"order_id,omitempty"`
-	ProductID  string  `json:"pro_id,omitempty"`
-	Quantity   uint32  `json:"count,omitempty"`
-	TotalPrice float64 `json:"total_price,omitempty"`
-	Status     uint8   `json:"status,omitempty"`
+	OrderID    uint32
+	ProductID  string
+	Quantity   uint32
+	TotalPrice float64
+	Status     uint8
 }
 
 // Create order table
@@ -67,9 +67,9 @@ func CreateOrderTable(db *sql.DB) error {
 }
 
 // Insert an order, get all info from admin
-func (order Order) InsertOrder(db *sql.DB) error {
-	_, err := db.Exec(orderSQLString[mysqlInsertOrder], order.OrderID, order.UserID,
-		order.ProductID, order.StoreID, order.Quantity, order.TotalPrice, order.Status)
+func InsertOrder(db *sql.DB, orderID uint32, userID uint64, productID string, storeID string, quantity uint32, totalPrice float64, status uint8) error {
+	_, err := db.Exec(orderSQLString[mysqlInsertOrder], orderID, userID,
+		productID, storeID, quantity, totalPrice, status)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,33 @@ func ListOrderByStoreID(db *sql.DB, storeID string) ([]*Item, error) {
 
 // Get order detial info by orderID
 func GetOrderDetialByOrderID(db *sql.DB, orderID string) (*Order, error) {
-	return nil, nil
+	var (
+		order_id    uint32
+		user_id     uint64
+		product_id  string
+		store_id    string
+		quantity    uint32
+		total_price float64
+		status      uint8
+	)
+
+	err := db.QueryRow(orderSQLString[mysqlOrderDetialInfoByOrderID], orderID).Scan(&order_id,
+		&user_id, &product_id, &store_id, &quantity, &total_price, &status)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Order{
+		OrderID:    order_id,
+		UserID:     user_id,
+		ProductID:  product_id,
+		StoreID:    store_id,
+		Quantity:   quantity,
+		TotalPrice: total_price,
+		Status:     status,
+	}
+
+	return result, nil
 }
 
 func ModifyOrderStatus(db *sql.DB, orderID string, status uint8) error {

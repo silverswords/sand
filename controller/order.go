@@ -34,11 +34,11 @@ func (c *OrderController) Register(r gin.IRouter) {
 func (c *OrderController) insert(ctx *gin.Context) {
 	var (
 		req struct {
-			OrderID    string  `json:"order_id,omitempty"`
-			ProID      string  `json:"pro_id,omitempty"`
-			OpenID     string  `json:"open_id,omitempty"`
+			OrderID    uint32  `json:"order_id,omitempty"`
+			UserID     uint64  `json:"open_id,omitempty"`
+			ProductID  string  `json:"pro_id,omitempty"`
 			StoreID    string  `json:"store_id,omitempty"`
-			Count      uint64  `json:"count,omitempty"`
+			Quantity   uint32  `json:"count,omitempty"`
 			TotalPrice float64 `json:"total_price,omitempty"`
 			Status     uint8   `json:"status,omitempty"`
 			CreateTime string  `json:"create_time"`
@@ -51,7 +51,7 @@ func (c *OrderController) insert(ctx *gin.Context) {
 		return
 	}
 
-	if err := models.InsertOrder(c.db, req); err != nil {
+	if err := models.InsertOrder(c.db, req.OrderID, req.UserID, req.ProductID, req.StoreID, req.Quantity, req.TotalPrice, req.Status); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -61,7 +61,7 @@ func (c *OrderController) insert(ctx *gin.Context) {
 }
 
 func (c *OrderController) getOrderBrifeInfoByOpenID(ctx *gin.Context) {
-	var openId string
+	var openId uint64
 
 	if err := ctx.ShouldBind(&openId); err != nil {
 		ctx.Error(err)
@@ -69,7 +69,7 @@ func (c *OrderController) getOrderBrifeInfoByOpenID(ctx *gin.Context) {
 		return
 	}
 
-	brifeInfo, err := models.GetOrderBrifeInfoByOpenID(c.db, openId)
+	brifeInfo, err := models.ListOrderByUserID(c.db, openId)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -88,7 +88,7 @@ func (c *OrderController) getOrderBrifeInfoByStoreID(ctx *gin.Context) {
 		return
 	}
 
-	brifeInfo, err := models.GetOrderBrifeInfoByStoreID(c.db, store_id)
+	brifeInfo, err := models.ListOrderByStoreID(c.db, store_id)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
