@@ -1,9 +1,8 @@
-package mysql
+package models
 
 import (
+	"database/sql"
 	"fmt"
-
-	"github.com/silverswords/sand/models/structs"
 )
 
 const ProductTableName = "product"
@@ -38,8 +37,20 @@ var (
 	}
 )
 
+type Product struct {
+	ProID      string      `json:"pro_id,omitempty"`
+	StoreID    string      `json:"store_id,omitempty"` // to get every store's sales
+	Price      float64     `json:"price,omitempty"`
+	MainTitle  string      `json:"main_title,omitempty"`
+	Subtitle   string      `json:"subtitle,omitempty"`
+	Images     interface{} `json:"images,omitempty"`
+	Stock      uint64      `json:"stock,omitempty"`
+	Status     uint8       `json:"status,omitempty"`
+	CreateTime string      `json:"create_time,omitempty"`
+}
+
 // CreateTable create product table
-func CreateProductTable() error {
+func CreateProductTable(db *sql.DB) error {
 	_, err := db.Exec(productSQLString[mysqlCreateProductTable])
 	if err != nil {
 		return err
@@ -49,7 +60,7 @@ func CreateProductTable() error {
 }
 
 // InsertProduct insert product into the table
-func InsertProduct(product structs.Product) error {
+func InsertProduct(db *sql.DB, product Product) error {
 	_, err := db.Exec(productSQLString[mysqlInsertProduct], product.ProID,
 		product.StoreID, product.Price, product.MainTitle, product.Subtitle,
 		product.Images, product.Stock, product.Status)
@@ -61,13 +72,13 @@ func InsertProduct(product structs.Product) error {
 }
 
 // GetAll get all brife products info to homepage
-func GetAllProduce() ([]*structs.Product, error) {
+func GetAllProduce(db *sql.DB) ([]*Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductBrifeInfo])
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*structs.Product
+	var result []*Product
 	for rows.Next() {
 		var (
 			pro_id   string
@@ -80,7 +91,7 @@ func GetAllProduce() ([]*structs.Product, error) {
 			return nil, err
 		}
 
-		result = append(result, &structs.Product{
+		result = append(result, &Product{
 			ProID:    pro_id,
 			Price:    price,
 			Subtitle: subtitle,
@@ -93,7 +104,7 @@ func GetAllProduce() ([]*structs.Product, error) {
 }
 
 // GetProductByID detial info in product page, got by id
-func GetProductInfoByID(productID string) (*structs.Product, error) {
+func GetProductInfoByID(db *sql.DB, productID string) (*Product, error) {
 	var (
 		pro_id       string
 		price        float64
@@ -104,7 +115,7 @@ func GetProductInfoByID(productID string) (*structs.Product, error) {
 		status       uint8
 		created_time string
 
-		result *structs.Product
+		result *Product
 	)
 
 	err := db.QueryRow(productSQLString[mysqlProductdetialInfo], productID).Scan(&pro_id, &price, &main_title,
@@ -113,7 +124,7 @@ func GetProductInfoByID(productID string) (*structs.Product, error) {
 		return nil, err
 	}
 
-	result = &structs.Product{
+	result = &Product{
 		ProID:      pro_id,
 		Price:      price,
 		MainTitle:  main_title,
@@ -128,13 +139,13 @@ func GetProductInfoByID(productID string) (*structs.Product, error) {
 }
 
 // VirtualStoreProduct get virtual store's products by storeID
-func GetVirtualStoreProsByID(storeID string) ([]*structs.Product, error) {
+func GetVirtualStoreProsByID(db *sql.DB, storeID string) ([]*Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductOfVirtualStore], storeID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*structs.Product
+	var result []*Product
 	for rows.Next() {
 		var (
 			pro_id       string
@@ -150,7 +161,7 @@ func GetVirtualStoreProsByID(storeID string) ([]*structs.Product, error) {
 			return nil, err
 		}
 
-		result = append(result, &structs.Product{
+		result = append(result, &Product{
 			ProID:      pro_id,
 			Price:      price,
 			MainTitle:  main_title,

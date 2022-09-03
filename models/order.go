@@ -1,9 +1,8 @@
-package mysql
+package models
 
 import (
+	"database/sql"
 	"fmt"
-
-	"github.com/silverswords/sand/models/structs"
 )
 
 const OrderTableName = "orders"
@@ -38,8 +37,19 @@ var (
 	}
 )
 
+type Order struct {
+	OrderID    string  `json:"order_id,omitempty"`
+	ProID      string  `json:"pro_id,omitempty"`
+	OpenID     string  `json:"open_id,omitempty"`
+	StoreID    string  `json:"store_id,omitempty"`
+	Count      uint64  `json:"count,omitempty"`
+	TotalPrice float64 `json:"total_price,omitempty"`
+	Status     uint8   `json:"status,omitempty"`
+	CreateTime string  `json:"create_time"`
+}
+
 // Create order table
-func CreateOrderTable() error {
+func CreateOrderTable(db *sql.DB) error {
 	_, err := db.Exec(orderSQLString[mysqlCreateOrderTable])
 	if err != nil {
 		return err
@@ -49,7 +59,7 @@ func CreateOrderTable() error {
 }
 
 // Insert an order, get all info from admin
-func InsertOrder(order structs.Order) error {
+func InsertOrder(db *sql.DB, order Order) error {
 	_, err := db.Exec(orderSQLString[mysqlInsertOrder], order.OrderID, order.StoreID,
 		order.ProID, order.OpenID, order.Count, order.TotalPrice, order.Status)
 	if err != nil {
@@ -60,13 +70,13 @@ func InsertOrder(order structs.Order) error {
 }
 
 // Get brife order info by user's openID
-func GetOrderBrifeInfoByOpenID(openID string) ([]*structs.Order, error) {
+func GetOrderBrifeInfoByOpenID(db *sql.DB, openID string) ([]*Order, error) {
 	rows, err := db.Query(orderSQLString[mysqlOrderBrifeInfoByOpenID], openID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*structs.Order
+	var result []*Order
 	for rows.Next() {
 		var (
 			order_id    string
@@ -79,7 +89,7 @@ func GetOrderBrifeInfoByOpenID(openID string) ([]*structs.Order, error) {
 			return nil, err
 		}
 
-		result = append(result, &structs.Order{
+		result = append(result, &Order{
 			OrderID:    order_id,
 			ProID:      pro_id,
 			Count:      count,
@@ -92,13 +102,13 @@ func GetOrderBrifeInfoByOpenID(openID string) ([]*structs.Order, error) {
 }
 
 // Get brife order info by virtual store ID
-func GetOrderBrifeInfoByStoreID(storeID string) ([]*structs.Order, error) {
+func GetOrderBrifeInfoByStoreID(db *sql.DB, storeID string) ([]*Order, error) {
 	rows, err := db.Query(orderSQLString[mysqlOrderBrifeInfoByStoreID], storeID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*structs.Order
+	var result []*Order
 	for rows.Next() {
 		var (
 			order_id    string
@@ -111,7 +121,7 @@ func GetOrderBrifeInfoByStoreID(storeID string) ([]*structs.Order, error) {
 			return nil, err
 		}
 
-		result = append(result, &structs.Order{
+		result = append(result, &Order{
 			OrderID:    order_id,
 			ProID:      pro_id,
 			Count:      count,
@@ -124,7 +134,7 @@ func GetOrderBrifeInfoByStoreID(storeID string) ([]*structs.Order, error) {
 }
 
 // Get order detial info by orderID
-func GetOrderDetialByOrderID(orderID string) (*structs.Order, error) {
+func GetOrderDetialByOrderID(db *sql.DB, orderID string) (*Order, error) {
 	var (
 		order_id    string
 		pro_id      string
@@ -141,7 +151,7 @@ func GetOrderDetialByOrderID(orderID string) (*structs.Order, error) {
 		return nil, err
 	}
 
-	result := &structs.Order{
+	result := &Order{
 		OrderID:    orderID,
 		ProID:      pro_id,
 		OpenID:     open_id,
@@ -154,7 +164,7 @@ func GetOrderDetialByOrderID(orderID string) (*structs.Order, error) {
 	return result, nil
 }
 
-func ModifyOrderStatus(orderID string, status uint8) error {
+func ModifyOrderStatus(db *sql.DB, orderID string, status uint8) error {
 	result, err := db.Exec(orderSQLString[mysqlModifyOrderStatusByOrderID], status, orderID)
 	if err != nil {
 		return nil

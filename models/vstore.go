@@ -1,9 +1,8 @@
-package mysql
+package models
 
 import (
+	"database/sql"
 	"fmt"
-
-	"github.com/silverswords/sand/models/structs"
 )
 
 const VirtualStoreTableName = "vstore"
@@ -26,7 +25,12 @@ var (
 	}
 )
 
-func CreateVStoreTable() error {
+type VirtualStore struct {
+	StoreName string `json:"store_name"`
+	StoreID   string `json:"store_id"`
+}
+
+func CreateVStoreTable(db *sql.DB) error {
 	_, err := db.Query(virtualStoreSQLString[mysqlCreateOrderTable])
 	if err != nil {
 		return err
@@ -36,7 +40,7 @@ func CreateVStoreTable() error {
 }
 
 // Create a new virtual store, get all info from admin
-func InsertVStore(vs structs.VirtualStore) error {
+func InsertVStore(db *sql.DB, vs VirtualStore) error {
 	_, err := db.Exec(virtualStoreSQLString[mysqlInsertVStore], vs.StoreName, vs.StoreID)
 	if err != nil {
 		return err
@@ -46,13 +50,13 @@ func InsertVStore(vs structs.VirtualStore) error {
 }
 
 // Get all virtual stores info, show them to the admin
-func GetAllVirtualStores() ([]*structs.VirtualStore, error) {
+func GetAllVirtualStores(db *sql.DB) ([]*VirtualStore, error) {
 	rows, err := db.Query(virtualStoreSQLString[mysqlGetAllVirtualStores])
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*structs.VirtualStore
+	var result []*VirtualStore
 	for rows.Next() {
 		var (
 			store_name string
@@ -62,7 +66,7 @@ func GetAllVirtualStores() ([]*structs.VirtualStore, error) {
 			return nil, err
 		}
 
-		result = append(result, &structs.VirtualStore{
+		result = append(result, &VirtualStore{
 			StoreName: store_name,
 			StoreID:   store_id,
 		})

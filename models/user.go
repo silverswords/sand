@@ -1,10 +1,9 @@
-package mysql
+package models
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-
-	"github.com/silverswords/sand/models/structs"
 )
 
 const (
@@ -36,7 +35,13 @@ var (
 	}
 )
 
-func CreateUserTable() error {
+type User struct {
+	UnionID string
+	OpenID  string
+	Mobile  string
+}
+
+func CreateUserTable(db *sql.DB) error {
 	_, err := db.Exec(userSQLString[mysqlUserCreateTable])
 	if err != nil {
 		return err
@@ -45,7 +50,7 @@ func CreateUserTable() error {
 	return nil
 }
 
-func InsertUser(user structs.User) error {
+func InsertUser(db *sql.DB, user User) error {
 	result, err := db.Exec(userSQLString[mysqlUserInsert], user.UnionID, user.OpenID, user.Mobile)
 	if err != nil {
 		return err
