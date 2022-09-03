@@ -24,12 +24,12 @@ var (
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
 			union_id    VARCHAR(128) UNIQUE NOT NULL,
 			open_id     VARCHAR(128) UNIQUE NOT NULL,
-			mobile   	VARCHAR(32) UNIQUE DEFAULT NULL,
+			mobile   	VARCHAR(32)  UNIQUE DEFAULT NULL,
 			created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (union_id)
 		) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`, TableName),
-		fmt.Sprintf(`INSERT INTO %s (union_id, open_id, mobile)  VALUES (?, ?, ?)`, TableName),
+		fmt.Sprintf(`INSERT INTO %s (union_id, open_id, mobile) VALUES (?, ?, ?)`, TableName),
 		fmt.Sprintf(`UPDATE %s SET mobile=?, modified_at=? WHERE union_id = ? LIMIT 1`, TableName),
 		fmt.Sprintf(`SELECT mobile FROM %s WHERE union_id = ? LOCK IN SHARE MODE`, TableName),
 	}
@@ -50,8 +50,8 @@ func CreateUserTable(db *sql.DB) error {
 	return nil
 }
 
-func InsertUser(db *sql.DB, user User) error {
-	result, err := db.Exec(userSQLString[mysqlUserInsert], user.UnionID, user.OpenID, user.Mobile)
+func InsertUser(db *sql.DB, unionID string, openID string, mobile string) error {
+	result, err := db.Exec(userSQLString[mysqlUserInsert], unionID, openID, mobile)
 	if err != nil {
 		return err
 	}

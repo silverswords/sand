@@ -19,7 +19,7 @@ func NewOrderController(db *sql.DB) *OrderController {
 	}
 }
 
-func (c *OrderController) Register(r gin.IRouter) {
+func (c *OrderController) RegisterRouter(r gin.IRouter) {
 	if err := models.CreateOrderTable(c.db); err != nil {
 		log.Fatal(err)
 	}

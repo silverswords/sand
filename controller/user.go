@@ -18,7 +18,7 @@ func NewUserController(db *sql.DB) *ProductController {
 	}
 }
 
-func (c *UserController) RegisterUser(r gin.IRouter) {
+func (c *UserController) RegisterRouter(r gin.IRouter) {
 	if err := models.CreateUserTable(c.db); err != nil {
 		log.Fatal(err)
 	}

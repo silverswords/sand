@@ -20,7 +20,7 @@ func NewProductController(db *sql.DB) *ProductController {
 	}
 }
 
-func (c *ProductController) RegisterProduct(r gin.IRouter) {
+func (c *ProductController) RegisterRouter(r gin.IRouter) {
 	if err := models.CreateProductTable(c.db); err != nil {
 		log.Fatal(err)
 	}
