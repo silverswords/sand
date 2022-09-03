@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/silverswords/sand/models"
 )
 
 type OrderController struct {
