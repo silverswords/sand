@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silverswords/sand/models"
@@ -42,7 +41,6 @@ func (c *OrderController) insert(ctx *gin.Context) {
 			Quantity   uint32  `json:"count,omitempty"`
 			TotalPrice float64 `json:"total_price,omitempty"`
 			Status     uint8   `json:"status,omitempty"`
-			CreateTime string  `json:"create_time"`
 		}
 	)
 
@@ -52,7 +50,7 @@ func (c *OrderController) insert(ctx *gin.Context) {
 		return
 	}
 
-	if err := models.InsertOrder(c.db, req.OrderID, req.UserID, req.ProductID, req.StoreID, req.Quantity, req.TotalPrice, req.Status, time.Now()); err != nil {
+	if err := models.InsertOrder(c.db, req.OrderID, req.UserID, req.ProductID, req.StoreID, req.Quantity, req.TotalPrice, req.Status); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -62,15 +60,19 @@ func (c *OrderController) insert(ctx *gin.Context) {
 }
 
 func (c *OrderController) getOrderBrifeInfoByOpenID(ctx *gin.Context) {
-	var openId uint64
+	var (
+		req struct {
+			UserID uint64 `json:"user_id,omitempty"`
+		}
+	)
 
-	if err := ctx.ShouldBind(&openId); err != nil {
+	if err := ctx.ShouldBind(&req.UserID); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
 
-	brifeInfo, err := models.ListOrderByUserID(c.db, openId)
+	brifeInfo, err := models.ListOrderByUserID(c.db, req.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -81,15 +83,19 @@ func (c *OrderController) getOrderBrifeInfoByOpenID(ctx *gin.Context) {
 }
 
 func (c *OrderController) getOrderBrifeInfoByStoreID(ctx *gin.Context) {
-	var store_id string
+	var (
+		req struct {
+			StoreID string `json:"store_id,omitempty"`
+		}
+	)
 
-	if err := ctx.ShouldBind(&store_id); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
 
-	brifeInfo, err := models.ListOrderByStoreID(c.db, store_id)
+	brifeInfo, err := models.ListOrderByStoreID(c.db, req.StoreID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -100,15 +106,19 @@ func (c *OrderController) getOrderBrifeInfoByStoreID(ctx *gin.Context) {
 }
 
 func (c *OrderController) getOrderDetialByOrderID(ctx *gin.Context) {
-	var order_id string
+	var (
+		req struct {
+			OrderID string `json:"order_id,omitempty"`
+		}
+	)
 
-	if err := ctx.ShouldBind(&order_id); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
 
-	detial, err := models.GetOrderDetialByOrderID(c.db, order_id)
+	detial, err := models.GetOrderDetialByOrderID(c.db, req.OrderID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})

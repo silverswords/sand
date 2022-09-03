@@ -29,7 +29,7 @@ var (
 			modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (union_id)
 		) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`, TableName),
-		fmt.Sprintf(`INSERT INTO %s (union_id, open_id, mobile)  VALUES (?,?,?)`, TableName),
+		fmt.Sprintf(`INSERT INTO %s (union_id, open_id, mobile)  VALUES (?, ?, ?)`, TableName),
 		fmt.Sprintf(`UPDATE %s SET mobile=?, modified_at=? WHERE union_id = ? LIMIT 1`, TableName),
 		fmt.Sprintf(`SELECT mobile FROM %s WHERE union_id = ? LOCK IN SHARE MODE`, TableName),
 	}
