@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 const ProductTableName = "product"
@@ -38,15 +39,15 @@ var (
 )
 
 type Product struct {
-	ProID      string      `json:"pro_id,omitempty"`
-	StoreID    string      `json:"store_id,omitempty"` // to get every store's sales
-	Price      float64     `json:"price,omitempty"`
-	MainTitle  string      `json:"main_title,omitempty"`
-	Subtitle   string      `json:"subtitle,omitempty"`
-	Images     interface{} `json:"images,omitempty"`
-	Stock      uint64      `json:"stock,omitempty"`
-	Status     uint8       `json:"status,omitempty"`
-	CreateTime string      `json:"create_time,omitempty"`
+	ProductID  string
+	StoreID    string
+	Price      float64
+	MainTitle  string
+	Subtitle   string
+	Images     interface{}
+	Stock      uint32
+	Status     uint8
+	CreateTime string
 }
 
 // CreateTable create product table
@@ -60,10 +61,8 @@ func CreateProductTable(db *sql.DB) error {
 }
 
 // InsertProduct insert product into the table
-func InsertProduct(db *sql.DB, product Product) error {
-	_, err := db.Exec(productSQLString[mysqlInsertProduct], product.ProID,
-		product.StoreID, product.Price, product.MainTitle, product.Subtitle,
-		product.Images, product.Stock, product.Status)
+func InsertProduct(db *sql.DB, productID string, storeID string, price float64, mainTitle string, subTitle string, images interface{}, stock uint32, status uint8, createTime time.Time) error {
+	_, err := db.Exec(orderSQLString[mysqlInsertOrder], productID, storeID, storeID, price, mainTitle, subTitle, images, stock, status, createTime)
 	if err != nil {
 		return err
 	}
@@ -72,7 +71,7 @@ func InsertProduct(db *sql.DB, product Product) error {
 }
 
 // GetAll get all brife products info to homepage
-func GetAllProduce(db *sql.DB) ([]*Product, error) {
+func ListAllProduce(db *sql.DB) ([]*Product, error) {
 	rows, err := db.Query(productSQLString[mysqlProductBrifeInfo])
 	if err != nil {
 		return nil, err
@@ -92,11 +91,11 @@ func GetAllProduce(db *sql.DB) ([]*Product, error) {
 		}
 
 		result = append(result, &Product{
-			ProID:    pro_id,
-			Price:    price,
-			Subtitle: subtitle,
-			Images:   images,
-			Status:   status,
+			ProductID: pro_id,
+			Price:     price,
+			Subtitle:  subtitle,
+			Images:    images,
+			Status:    status,
 		})
 	}
 
@@ -111,7 +110,7 @@ func GetProductInfoByID(db *sql.DB, productID string) (*Product, error) {
 		main_title   string
 		subtitle     string
 		images       interface{}
-		stock        uint64
+		stock        uint32
 		status       uint8
 		created_time string
 
@@ -125,7 +124,7 @@ func GetProductInfoByID(db *sql.DB, productID string) (*Product, error) {
 	}
 
 	result = &Product{
-		ProID:      pro_id,
+		ProductID:  pro_id,
 		Price:      price,
 		MainTitle:  main_title,
 		Subtitle:   subtitle,
@@ -153,7 +152,7 @@ func GetVirtualStoreProsByID(db *sql.DB, storeID string) ([]*Product, error) {
 			main_title   string
 			subtitle     string
 			images       interface{}
-			stock        uint64
+			stock        uint32
 			status       uint8
 			created_time string
 		)
@@ -162,7 +161,7 @@ func GetVirtualStoreProsByID(db *sql.DB, storeID string) ([]*Product, error) {
 		}
 
 		result = append(result, &Product{
-			ProID:      pro_id,
+			ProductID:  pro_id,
 			Price:      price,
 			MainTitle:  main_title,
 			Subtitle:   subtitle,

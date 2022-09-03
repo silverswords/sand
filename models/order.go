@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 const OrderTableName = "orders"
@@ -29,7 +30,7 @@ var (
 			created_at 	 DATETIME DEFAULT NOW(),
 			PRIMARY KEY (order_id)
 		)  ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`, OrderTableName),
-		fmt.Sprintf(`INSERT INTO %s (order_id, user_id, pro_id, store_id, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)`, OrderTableName),
+		fmt.Sprintf(`INSERT INTO %s (order_id, user_id, pro_id, store_id, quantity, total_price, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, OrderTableName),
 		fmt.Sprintf(`SELECT order_id, pro_id, quantity, total_price, status FROM %s WHERE open_id = ?`, OrderTableName),
 		fmt.Sprintf(`SELECT order_id, pro_id, quantity, total_price, status FROM %s WHERE store_id = ?`, OrderTableName),
 		fmt.Sprintf(`SELECT order_id, user_id, pro_id, store_id, quantity, total_price, status, create_at FROM %s WHERE order_id = ?`, OrderTableName),
@@ -67,9 +68,9 @@ func CreateOrderTable(db *sql.DB) error {
 }
 
 // Insert an order, get all info from admin
-func InsertOrder(db *sql.DB, orderID uint32, userID uint64, productID string, storeID string, quantity uint32, totalPrice float64, status uint8) error {
+func InsertOrder(db *sql.DB, orderID uint32, userID uint64, productID string, storeID string, quantity uint32, totalPrice float64, status uint8, createTime time.Time) error {
 	_, err := db.Exec(orderSQLString[mysqlInsertOrder], orderID, userID,
-		productID, storeID, quantity, totalPrice, status)
+		productID, storeID, quantity, totalPrice, status, createTime)
 	if err != nil {
 		return err
 	}

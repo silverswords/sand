@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silverswords/sand/models"
@@ -33,13 +34,13 @@ func (c *ProductController) RegisterProduct(r gin.IRouter) {
 func (c *ProductController) insertProduct(ctx *gin.Context) {
 	var (
 		req struct {
-			ProID      string      `json:"pro_id,omitempty"`
-			StoreID    string      `json:"store_id,omitempty"` // to get every store's sales
+			ProductID  string      `json:"pro_id,omitempty"`
+			StoreID    string      `json:"store_id,omitempty"`
 			Price      float64     `json:"price,omitempty"`
 			MainTitle  string      `json:"main_title,omitempty"`
 			Subtitle   string      `json:"subtitle,omitempty"`
 			Images     interface{} `json:"images,omitempty"`
-			Stock      uint64      `json:"stock,omitempty"`
+			Stock      uint32      `json:"stock,omitempty"`
 			Status     uint8       `json:"status,omitempty"`
 			CreateTime string      `json:"create_time,omitempty"`
 		}
@@ -50,7 +51,7 @@ func (c *ProductController) insertProduct(ctx *gin.Context) {
 		return
 	}
 
-	if err := models.InsertProduct(c.db, req); err != nil {
+	if err := models.InsertProduct(c.db, req.ProductID, req.StoreID, req.Price, req.MainTitle, req.Subtitle, req.Images, req.Stock, req.Status, time.Now()); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -60,7 +61,7 @@ func (c *ProductController) insertProduct(ctx *gin.Context) {
 }
 
 func (c *ProductController) getAllProduct(ctx *gin.Context) {
-	brifeInfo, err := models.GetAllProduce(c.db)
+	brifeInfo, err := models.ListAllProduce(c.db)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})

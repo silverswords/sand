@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silverswords/sand/models"
@@ -51,7 +52,7 @@ func (c *OrderController) insert(ctx *gin.Context) {
 		return
 	}
 
-	if err := models.InsertOrder(c.db, req.OrderID, req.UserID, req.ProductID, req.StoreID, req.Quantity, req.TotalPrice, req.Status); err != nil {
+	if err := models.InsertOrder(c.db, req.OrderID, req.UserID, req.ProductID, req.StoreID, req.Quantity, req.TotalPrice, req.Status, time.Now()); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
