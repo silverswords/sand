@@ -1,4 +1,4 @@
-package application
+package core
 
 import (
 	"github.com/silverswords/sand/model"

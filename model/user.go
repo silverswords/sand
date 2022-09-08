@@ -2,13 +2,6 @@ package model
 
 import "gorm.io/gorm"
 
-type User struct {
-	gorm.Model
-	UnionID string `gorm:"type:varchar(256);unique;not null"`
-	OpenID  string `gorm:"type:varchar(256);unique;not null"`
-	Mobile  string `gorm:"type:varchar(64) ;unique;not null"`
-}
-
 func CreateUser(db *gorm.DB, unionID string, openID string, mobile string) error {
 	return db.Model(User{}).Create(&User{UnionID: unionID, OpenID: openID, Mobile: mobile}).Error
 }

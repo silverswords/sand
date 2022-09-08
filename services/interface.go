@@ -1,9 +1,11 @@
 package services
 
+import "github.com/silverswords/sand/model"
+
 type Service interface {
 	Users() Users
 }
 
 type Users interface {
-	Create() error
+	Create(*model.User) error
 }

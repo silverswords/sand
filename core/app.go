@@ -1,4 +1,4 @@
-package application
+package core
 
 import (
 	"github.com/silverswords/sand/services"
@@ -6,11 +6,9 @@ import (
 )
 
 type Application struct {
-	gormDB *mysqlDatabase
-}
-
-type Config struct {
-	Dsn string
+	config  *Config
+	gormDB  *mysqlDatabase
+	service services.Service
 }
 
 func CreateApplication(config *Config) *Application {
@@ -25,6 +23,10 @@ func (a *Application) GetDefaultGormDB() *gorm.DB {
 	return a.gormDB.DB
 }
 
+func (a *Application) SetServices(s *services.Service) {
+	a.service = *s
+}
+
 func (a *Application) Services() services.Service {
-	return nil
+	return a.service
 }
