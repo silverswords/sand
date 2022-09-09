@@ -16,5 +16,10 @@ func CreateUsersService(accessor interfaces.DatabaseAccessor) Users {
 }
 
 func (s *users) Create(u *model.User) error {
-	return nil
+	return s.DatabaseAccessor.GetDefaultGormDB().Model(model.User{}).Create(u).Error
+}
+
+func (s *users) UpdateMobile(u *model.User) error {
+	return s.DatabaseAccessor.GetDefaultGormDB().Model(model.User{}).
+		Where("union_id = ?", u.UnionID).Update("mobile", u.Mobile).Error
 }

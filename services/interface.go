@@ -8,4 +8,5 @@ type Service interface {
 
 type Users interface {
 	Create(*model.User) error
+	UpdateMobile(*model.User) error
 }
