@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/silverswords/sand/model"
-	"gorm.io/gorm"
+	"github.com/silverswords/sand/services"
 )
 
-var db *gorm.DB
+var instance *Application
 
 func init() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=%t&loc=%s",
@@ -18,50 +18,22 @@ func init() {
 		Dsn: dsn,
 	}
 
-	instance := CreateApplication(config)
-	db = instance.GetDefaultGormDB()
+	instance = CreateApplication(config)
+	userService := services.CreateUsersService(instance)
+	service := services.CreateService(userService)
+	instance.SetServices(&service)
 }
 
 func TestCreateUser(t *testing.T) {
-	if err := model.CreateUser(db, "1111", "1111", "12345678901"); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestQueryByUnionId(t *testing.T) {
-	id, err := model.QueryByUnionId(db, "1111")
-	if err != nil {
-		t.Error(err)
-	}
-
-	t.Log(id)
-}
-
-func TestQueryByMobile(t *testing.T) {
-	mobile := "12345678901"
-
-	user, err := model.QueryByMobile(db, mobile)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if user.UnionID != "1111" || user.Mobile != "12345678901" || user.OpenID != "1111" {
-		t.Error("query error")
+	var user = model.User{UnionID: "1111", OpenID: "11111", Mobile: "12345678901"}
+	if err := instance.Services().Users().Create(&user); err != nil {
+		t.Errorf("CreateUser: %v", err)
 	}
 }
 
 func TestUpdateMobile(t *testing.T) {
-	mobile := "98765432109"
-	err := model.UpdateMobile(db, "1111", mobile)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	var expected string
-	db.Model(model.User{}).Select("mobile").Where(model.User{UnionID: "1111"}).Scan(&expected)
-	if expected != mobile {
-		t.Errorf("expected %s, got %s", expected, mobile)
+	var user = model.User{UnionID: "1111", OpenID: "1111", Mobile: "10987654321"}
+	if err := instance.Services().Users().UpdateMobile(&user); err != nil {
+		t.Errorf("CreateUser: %v", err)
 	}
 }
