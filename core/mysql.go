@@ -20,7 +20,7 @@ func NewMysqlDatabase(types, dsn string) *mysqlDatabase {
 	case "mysql":
 		session := db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_bin").Session(&gorm.Session{})
 
-		session.AutoMigrate(&model.User{}, &model.Order{})
+		session.AutoMigrate(&model.User{}, &model.Order{}, &model.Product{})
 
 		migrator := session.Migrator()
 		if !migrator.HasTable(&model.User{}) {
@@ -29,6 +29,10 @@ func NewMysqlDatabase(types, dsn string) *mysqlDatabase {
 
 		if !migrator.HasTable(&model.Order{}) {
 			migrator.CreateTable(&model.Order{})
+		}
+
+		if !migrator.HasTable(&model.Product{}) {
+			migrator.CreateTable(&model.Product{})
 		}
 
 		return &mysqlDatabase{
