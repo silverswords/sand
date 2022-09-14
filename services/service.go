@@ -1,18 +1,16 @@
 package services
 
 type service struct {
-	users    Users
-	orders   Orders
-	products Products
-	category Category
+	users         Users
+	products      Products
+	category      Category
+	orders        Orders
+	orderDetails  OrderDetails
+	shoppingCarts ShoppingCarts
 }
 
 func (s *service) Users() Users {
 	return s.users
-}
-
-func (s *service) Orders() Orders {
-	return s.orders
 }
 
 func (s *service) Products() Products {
@@ -23,11 +21,25 @@ func (s *service) Category() Category {
 	return s.category
 }
 
-func CreateService(u Users, o Orders, p Products, c Category) Service {
+func (s *service) Orders() Orders {
+	return s.orders
+}
+
+func (s *service) OrderDetails() OrderDetails {
+	return s.orderDetails
+}
+
+func (s *service) ShoppingCarts() ShoppingCarts {
+	return s.shoppingCarts
+}
+
+func CreateService(u Users, p Products, c Category, o Orders, d OrderDetails, s ShoppingCarts) Service {
 	return &service{
-		users:    u,
-		orders:   o,
-		products: p,
-		category: c,
+		users:         u,
+		orders:        o,
+		products:      p,
+		category:      c,
+		orderDetails:  d,
+		shoppingCarts: s,
 	}
 }

@@ -6,18 +6,16 @@ import (
 
 type Service interface {
 	Users() Users
-	Orders() Orders
 	Products() Products
 	Category() Category
+	Orders() Orders
+	OrderDetails() OrderDetails
+	ShoppingCarts() ShoppingCarts
 }
 
 type Users interface {
 	Create(*model.User) error
 	UpdateMobile(*model.User) error
-}
-
-type Orders interface {
-	Create(*model.Order) error
 }
 
 type Products interface {
@@ -35,4 +33,16 @@ type Category interface {
 	ChangeCategoryStatus(id uint, status int8) error
 	ChangeCategoryName(id uint, name string) error
 	ListChildrenByParentID(parentID uint) ([]*Category, error)
+}
+
+type Orders interface {
+	Create(*model.Order) error
+}
+
+type OrderDetails interface {
+	Create(*model.OrderDetail) error
+}
+
+type ShoppingCarts interface {
+	Create(*model.ShoppingCart) error
 }

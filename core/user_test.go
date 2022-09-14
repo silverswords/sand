@@ -19,8 +19,14 @@ func init() {
 	}
 
 	instance = CreateApplication(config)
-	userService := services.CreateUsersService(instance)
-	service := services.CreateService(userService)
+	usersService := services.CreateUsersService(instance)
+	productsService := services.CreateProductsService(instance)
+	categoryService := services.CreateCategoryService(instance)
+	ordersService := services.CreateOrdersService(instance)
+	orderDetailsService := services.CreateOrderDetailsService(instance)
+	shoppingCartsService := services.CreateShoppingCartsService(instance)
+	service := services.CreateService(usersService, productsService, categoryService,
+		ordersService, orderDetailsService, shoppingCartsService)
 	instance.SetServices(&service)
 }
 
