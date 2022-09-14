@@ -21,7 +21,7 @@ type Product struct {
 	PhotoUrls  string  `gorm:"type:json"`
 	MainTitle  string  `gorm:"type:varchar(256)"`
 	Subtitle   string  `gorm:"type:varchar(256)"`
-	Status     uint8   `gorm:"not null;default:0"`
+	Status     uint8   `gorm:"type:tinyint;not null;"`
 	Stock      uint32  `gorm:"not null"`
 }
 
@@ -29,19 +29,19 @@ type Category struct {
 	gorm.Model
 	ParentID uint   `gorm:"not null;default:0"`
 	Name     string `gorm:"not null;unique"`
-	Status   int8   `gorm:"not null;default:0"`
+	Status   uint8  `gorm:"not null;default:0"`
 }
 
 type Order struct {
 	gorm.Model
-	UserID     uint      `gorm:"type:bigint;not null"`
 	ProductID  uint      `gorm:"type:bigint;not null"`
 	TotalPrice float64   `gorm:"type:decimal;precision:8;scale:2;not null"`
-	PayTime    time.Time `gorm:"type:datetime"`
-	Status     uint8     `gorm:"type:tinyint;not null"`
+	UserID     uint      `gorm:"type:bigint;not null"`
 	UserName   string    `gorm:"type:varchar(64);not null"`
 	UserPhone  string    `gorm:"type:varchar(64);not null"`
 	UserAddr   string    `gorm:"type:varchar(64);not null"`
+	Status     uint8     `gorm:"type:tinyint;not null"`
+	PayTime    time.Time `gorm:"type:datetime"`
 }
 
 type OrderDetail struct {
@@ -57,4 +57,10 @@ type ShoppingCart struct {
 	UserID    uint `gorm:"type:bigint;not null"`
 	ProductID uint `gorm:"type:bigint;not null"`
 	Quantity  uint `gorm:"type:bigint;not null"`
+}
+
+type VirtualStore struct {
+	gorm.Model
+	Name   string `gorm:"type:varchar(64);not null;unique"`
+	Status uint8  `gorm:"type:tinyint;not null;default:0"`
 }

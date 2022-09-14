@@ -11,6 +11,7 @@ type Service interface {
 	Orders() Orders
 	OrderDetails() OrderDetails
 	ShoppingCarts() ShoppingCarts
+	VirtualStore() VirtualStore
 }
 
 type Users interface {
@@ -30,9 +31,13 @@ type Products interface {
 
 type Category interface {
 	Create(*model.Category) error
-	ChangeCategoryStatus(id uint, status int8) error
+	ChangeCategoryStatus(id uint, status uint8) error
 	ChangeCategoryName(id uint, name string) error
 	ListChildrenByParentID(parentID uint) ([]*Category, error)
+}
+
+type VirtualStore interface {
+	Create(*model.VirtualStore) error
 }
 
 type Orders interface {

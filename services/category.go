@@ -19,7 +19,7 @@ func (s *category) Create(c *model.Category) error {
 	return s.GetDefaultGormDB().Model(model.Category{}).Create(c).Error
 }
 
-func (s *category) ChangeCategoryStatus(id uint, status int8) error {
+func (s *category) ChangeCategoryStatus(id uint, status uint8) error {
 	return s.GetDefaultGormDB().Model(model.Category{}).Where("id = ?", id).Update("status", status).Error
 }
 

@@ -7,6 +7,7 @@ type service struct {
 	orders        Orders
 	orderDetails  OrderDetails
 	shoppingCarts ShoppingCarts
+	virtualstore  VirtualStore
 }
 
 func (s *service) Users() Users {
@@ -33,7 +34,11 @@ func (s *service) ShoppingCarts() ShoppingCarts {
 	return s.shoppingCarts
 }
 
-func CreateService(u Users, p Products, c Category, o Orders, d OrderDetails, s ShoppingCarts) Service {
+func (s *service) VirtualStore() VirtualStore {
+	return s.virtualstore
+}
+
+func CreateService(u Users, p Products, c Category, o Orders, d OrderDetails, s ShoppingCarts, vs VirtualStore) Service {
 	return &service{
 		users:         u,
 		orders:        o,
@@ -41,5 +46,6 @@ func CreateService(u Users, p Products, c Category, o Orders, d OrderDetails, s 
 		category:      c,
 		orderDetails:  d,
 		shoppingCarts: s,
+		virtualstore:  vs,
 	}
 }
