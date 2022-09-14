@@ -2,7 +2,6 @@ package services
 
 import (
 	"github.com/silverswords/sand/model"
-	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -23,12 +22,12 @@ type Orders interface {
 
 type Products interface {
 	Create(*model.Product) error
-	ListAllProducts(db *gorm.DB) ([]*model.Product, error)
-	QueryByProductId(db *gorm.DB, id uint) (*model.Product, error)
-	QueryByStoreId(db *gorm.DB, storeID uint) ([]*model.Product, error)
-	ModifyProduct(db *gorm.DB, id uint, property string, v interface{}) error
-	DeleteByProductID(db *gorm.DB, id uint) error
-	DeleteByStoreID(db *gorm.DB, storeID uint) error
+	ListAllProducts() ([]*model.Product, error)
+	QueryByProductId(id uint) (*model.Product, error)
+	QueryByStoreId(storeID uint) ([]*model.Product, error)
+	ModifyProduct(id uint, property string, v interface{}) error
+	DeleteByProductID(id uint) error
+	DeleteByStoreID(storeID uint) error
 }
 
 type Category interface {
