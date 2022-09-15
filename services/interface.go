@@ -25,13 +25,9 @@ type Products interface {
 	ListAllProducts() ([]*model.Product, error)
 	Create(*model.Product) error
 	ModifyCategoryID(id []uint64, v uint64) error
-	ModifyPhotoUrls(id uint64, v interface{}) error
-	ModifyMainTitle(id uint64, v interface{}) error
-	ModifySubtitle(id uint64, v interface{}) error
 	ModifyStoreID(id []uint64, v uint64) error
 	ModifyStatus(id []uint64, v uint8) error
-	ModifyStock(id []uint64, v uint32) error
-	ModifyPrice(id uint64, v interface{}) error
+	ModifyProduct(product *model.Product) error
 	DeleteByStoreID(storeID uint8) error
 	DeleteByProductID(id uint8) error
 }
