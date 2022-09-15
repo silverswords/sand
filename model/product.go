@@ -84,6 +84,10 @@ func ModifyPrice(db *gorm.DB, id uint64, v interface{}) error {
 	return db.Model(Product{}).Where("id = ?", id).Update("price", v).Error
 }
 
+func ModifyProduct(db *gorm.DB, product *Product) error {
+	return db.Model(Product{}).Where("id = ?", product.ID).Updates(product).Error
+}
+
 // Delete product by product ID
 func DeleteByProductID(db *gorm.DB, id uint) error {
 	result := db.Where("id = ?", id).Delete(&Product{})

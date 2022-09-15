@@ -64,6 +64,10 @@ func (s *products) DeleteByStoreID(storeID uint8) error {
 	return nil
 }
 
+func (s *products) ModifyProduct(product *model.Product) error {
+	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", product.ID).Updates(product).Error
+}
+
 func (s *products) ModifyCategoryID(id []uint64, v uint64) error {
 	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{CategoryID: v}).Error
 }

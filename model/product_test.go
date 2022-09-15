@@ -66,7 +66,7 @@ func TestListAllProducts(t *testing.T) {
 	}
 }
 
-func TestModifyProduct(t *testing.T) {
+func TestModify(t *testing.T) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		t.Log("Failed to connect to the database, error: " + err.Error())
@@ -139,4 +139,20 @@ func TestDeleteByStoreID(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
+}
+
+func TestModifyProduct(t *testing.T) {
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		t.Log("Failed to connect to the database, error: " + err.Error())
+	}
+	db.AutoMigrate(Product{})
+
+	product := Product{
+		Model:   Model{ID: 1},
+		StoreID: 999,
+		Price:   8888.8,
+	}
+
+	ModifyProduct(db, &product)
 }
