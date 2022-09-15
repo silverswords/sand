@@ -8,7 +8,6 @@ import (
 
 var (
 	errInvalidNoRowsAffected = errors.New("affected 0 rows")
-	errInvalidProperty       = errors.New("invalid property")
 )
 
 // Insert a product into the table
@@ -53,28 +52,36 @@ func QueryByStoreId(db *gorm.DB, storeID uint) ([]*Product, error) {
 	return products, err
 }
 
-// Modify product property
-func ModifyProduct(db *gorm.DB, id uint, property string, v interface{}) error {
-	switch property {
-	case "category_id":
-		return db.Model(Product{}).Where("id = ?", id).Update("category_id", v).Error
-	case "photo_urls":
-		return db.Model(Product{}).Where("id = ?", id).Update("photo_urls", v).Error
-	case "main_title":
-		return db.Model(Product{}).Where("id = ?", id).Update("main_title", v).Error
-	case "store_id":
-		return db.Model(Product{}).Where("id = ?", id).Update("store_id", v).Error
-	case "subtitle":
-		return db.Model(Product{}).Where("id = ?", id).Update("subtitle", v).Error
-	case "status":
-		return db.Model(Product{}).Where("id = ?", id).Update("status", v).Error
-	case "stock":
-		return db.Model(Product{}).Where("id = ?", id).Update("stock", v).Error
-	case "price":
-		return db.Model(Product{}).Where("id = ?", id).Update("price", v).Error
-	}
+func ModifyCategoryID(db *gorm.DB, id []uint64, v uint64) error {
+	return db.Model(Product{}).Where("id IN ?", id).Updates(Product{CategoryID: v}).Error
+}
 
-	return errInvalidProperty
+func ModifyPhotoUrls(db *gorm.DB, id uint64, v interface{}) error {
+	return db.Model(Product{}).Where("id = ?", id).Update("photo_urls", v).Error
+}
+
+func ModifyMainTitle(db *gorm.DB, id uint64, v interface{}) error {
+	return db.Model(Product{}).Where("id = ?", id).Update("main_title", v).Error
+}
+
+func ModifyStoreID(db *gorm.DB, id []uint64, v uint64) error {
+	return db.Model(Product{}).Where("id IN ?", id).Updates(Product{StoreID: v}).Error
+}
+
+func ModifySubtitle(db *gorm.DB, id uint64, v interface{}) error {
+	return db.Model(Product{}).Where("id = ?", id).Update("subtitle", v).Error
+}
+
+func ModifyStatus(db *gorm.DB, id []uint64, v uint8) error {
+	return db.Model(Product{}).Where("id IN ?", id).Updates(Product{Status: v}).Error
+}
+
+func ModifyStock(db *gorm.DB, id []uint64, v uint32) error {
+	return db.Model(Product{}).Where("id IN ?", id).Updates(Product{Stock: v}).Error
+}
+
+func ModifyPrice(db *gorm.DB, id uint64, v interface{}) error {
+	return db.Model(Product{}).Where("id = ?", id).Update("price", v).Error
 }
 
 // Delete product by product ID

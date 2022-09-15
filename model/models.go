@@ -25,7 +25,7 @@ type Order struct {
 	PayTime       time.Time
 }
 
-type OrderDetial struct {
+type OrderDetail struct {
 	Model
 	OrderID   uint64  `gorm:"not null"`
 	ProductID uint64  `gorm:"not null"`

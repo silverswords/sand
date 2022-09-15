@@ -15,6 +15,6 @@ func CreateOrderDetailsService(accessor interfaces.DatabaseAccessor) OrderDetail
 	}
 }
 
-func (s *orderDetails) Create(d *model.OrderDetial) error {
-	return s.GetDefaultGormDB().Model(model.OrderDetial{}).Create(d).Error
+func (s *orderDetails) Create(d *model.OrderDetail) error {
+	return s.GetDefaultGormDB().Model(model.OrderDetail{}).Create(d).Error
 }

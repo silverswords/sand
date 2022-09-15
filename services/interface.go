@@ -24,13 +24,13 @@ type Products interface {
 	QueryByProductId(id uint8) (*model.Product, error)
 	ListAllProducts() ([]*model.Product, error)
 	Create(*model.Product) error
-	ModifyCategoryID(id uint64, v interface{}) error
+	ModifyCategoryID(id []uint64, v uint64) error
 	ModifyPhotoUrls(id uint64, v interface{}) error
 	ModifyMainTitle(id uint64, v interface{}) error
 	ModifySubtitle(id uint64, v interface{}) error
-	ModifyStoreID(id uint64, v interface{}) error
-	ModifyStatus(id uint64, v interface{}) error
-	ModifyStock(id uint64, v interface{}) error
+	ModifyStoreID(id []uint64, v uint64) error
+	ModifyStatus(id []uint64, v uint8) error
+	ModifyStock(id []uint64, v uint32) error
 	ModifyPrice(id uint64, v interface{}) error
 	DeleteByStoreID(storeID uint8) error
 	DeleteByProductID(id uint8) error
@@ -52,7 +52,7 @@ type Orders interface {
 }
 
 type OrderDetails interface {
-	Create(*model.OrderDetial) error
+	Create(*model.OrderDetail) error
 }
 
 type ShoppingCarts interface {

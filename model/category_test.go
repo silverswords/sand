@@ -1,23 +1,22 @@
 package model
 
 import (
-	"fmt"
 	"testing"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var (
-	username = "root"
-	password = "my-123456"
-	host     = "mqying.xyz"
-	port     = 3306
-	Dbname   = "vs"
+// var (
+// 	username = "root"
+// 	password = "my-123456"
+// 	host     = "mqying.xyz"
+// 	port     = 3306
+// 	Dbname   = "vs"
 
-	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
-		username, password, host, port, Dbname)
-)
+// 	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
+// 		username, password, host, port, Dbname)
+// )
 
 func TestCreateCategory(t *testing.T) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})

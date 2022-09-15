@@ -64,8 +64,8 @@ func (s *products) DeleteByStoreID(storeID uint8) error {
 	return nil
 }
 
-func (s *products) ModifyCategoryID(id uint64, v interface{}) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("category_id", v).Error
+func (s *products) ModifyCategoryID(id []uint64, v uint64) error {
+	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{CategoryID: v}).Error
 }
 
 func (s *products) ModifyPhotoUrls(id uint64, v interface{}) error {
@@ -76,20 +76,20 @@ func (s *products) ModifyMainTitle(id uint64, v interface{}) error {
 	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("main_title", v).Error
 }
 
-func (s *products) ModifyStoreID(id uint64, v interface{}) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("store_id", v).Error
+func (s *products) ModifyStoreID(id []uint64, v uint64) error {
+	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{StoreID: v}).Error
 }
 
 func (s *products) ModifySubtitle(id uint64, v interface{}) error {
 	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("subtitle", v).Error
 }
 
-func (s *products) ModifyStatus(id uint64, v interface{}) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("status", v).Error
+func (s *products) ModifyStatus(id []uint64, v uint8) error {
+	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{Status: v}).Error
 }
 
-func (s *products) ModifyStock(id uint64, v interface{}) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", id).Update("stock", v).Error
+func (s *products) ModifyStock(id []uint64, v uint32) error {
+	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{Stock: v}).Error
 }
 
 func (s *products) ModifyPrice(id uint64, v interface{}) error {
