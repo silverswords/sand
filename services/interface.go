@@ -20,20 +20,27 @@ type Users interface {
 }
 
 type Products interface {
-	Create(*model.Product) error
+	QueryByStoreId(storeID uint8) ([]*model.Product, error)
+	QueryByProductId(id uint8) (*model.Product, error)
 	ListAllProducts() ([]*model.Product, error)
-	QueryByProductId(id uint) (*model.Product, error)
-	QueryByStoreId(storeID uint) ([]*model.Product, error)
-	ModifyProduct(id uint, property string, v interface{}) error
-	DeleteByProductID(id uint) error
-	DeleteByStoreID(storeID uint) error
+	Create(*model.Product) error
+	ModifyCategoryID(id uint64, v interface{}) error
+	ModifyPhotoUrls(id uint64, v interface{}) error
+	ModifyMainTitle(id uint64, v interface{}) error
+	ModifySubtitle(id uint64, v interface{}) error
+	ModifyStoreID(id uint64, v interface{}) error
+	ModifyStatus(id uint64, v interface{}) error
+	ModifyStock(id uint64, v interface{}) error
+	ModifyPrice(id uint64, v interface{}) error
+	DeleteByStoreID(storeID uint8) error
+	DeleteByProductID(id uint8) error
 }
 
 type Category interface {
 	Create(*model.Category) error
-	ChangeCategoryStatus(id uint, status uint8) error
-	ChangeCategoryName(id uint, name string) error
-	ListChildrenByParentID(parentID uint) ([]*Category, error)
+	ChangeCategoryStatus(id uint8, status uint8) error
+	ChangeCategoryName(id uint8, name string) error
+	ListChildrenByParentID(parentID uint8) ([]*Category, error)
 }
 
 type VirtualStore interface {
@@ -45,7 +52,7 @@ type Orders interface {
 }
 
 type OrderDetails interface {
-	Create(*model.OrderDetail) error
+	Create(*model.OrderDetial) error
 }
 
 type ShoppingCarts interface {

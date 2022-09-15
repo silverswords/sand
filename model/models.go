@@ -1,66 +1,77 @@
 package model
 
-import (
-	"time"
+import "time"
 
-	"gorm.io/gorm"
-)
-
-type User struct {
-	gorm.Model
-	UnionID string `gorm:"type:varchar(256);unique;not null"`
-	OpenID  string `gorm:"type:varchar(256);unique;not null"`
-	Mobile  string `gorm:"type:varchar(64) ;unique;not null"`
-}
-
-type Product struct {
-	gorm.Model
-	StoreID    uint    `gorm:"not null;default:0"`
-	CategoryID uint    `gorm:"not null"`
-	Price      float64 `gorm:"precision:8;scale:2;not null"`
-	PhotoUrls  string  `gorm:"type:json"`
-	MainTitle  string  `gorm:"type:varchar(256)"`
-	Subtitle   string  `gorm:"type:varchar(256)"`
-	Status     uint8   `gorm:"type:tinyint;not null;"`
-	Stock      uint32  `gorm:"not null"`
+type Model struct {
+	ID        uint64 `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Category struct {
-	gorm.Model
-	ParentID uint   `gorm:"not null;default:0"`
+	Model
+	ParentID uint64 `gorm:"not null;default:0"`
 	Name     string `gorm:"not null;unique"`
 	Status   uint8  `gorm:"not null;default:0"`
 }
 
 type Order struct {
-	gorm.Model
-	ProductID  uint      `gorm:"type:bigint;not null"`
-	TotalPrice float64   `gorm:"type:decimal;precision:8;scale:2;not null"`
-	UserID     uint      `gorm:"type:bigint;not null"`
-	UserName   string    `gorm:"type:varchar(64);not null"`
-	UserPhone  string    `gorm:"type:varchar(64);not null"`
-	UserAddr   string    `gorm:"type:varchar(64);not null"`
-	Status     uint8     `gorm:"type:tinyint;not null"`
-	PayTime    time.Time `gorm:"type:datetime"`
+	Model
+	UserID        uint64  `gorm:"not null"`
+	ProductID     uint64  `gorm:"not null"`
+	UserAddressID uint64  `gorm:"not null"`
+	TotalPrice    float64 `gorm:"precision:8;scale:2;not null"`
+	Status        uint8   `gorm:"not null"`
+	PayTime       time.Time
 }
 
-type OrderDetail struct {
-	gorm.Model
-	OrderID   uint    `gorm:"type:bigint;not null"`
-	ProductID uint    `gorm:"type:bigint;not null"`
-	Quantity  uint    `gorm:"type:bigint;not null"`
-	Price     float64 `gorm:"type:decimal;precision:8;scale:2;not null"`
+type OrderDetial struct {
+	Model
+	OrderID   uint64  `gorm:"not null"`
+	ProductID uint64  `gorm:"not null"`
+	Quantity  uint32  `gorm:"not null"`
+	Price     float64 `gorm:"precision:8;scale:2;not null"`
+}
+
+type Product struct {
+	Model
+	StoreID    uint64  `gorm:"not null;default:0"`
+	CategoryID uint64  `gorm:"not null"`
+	Price      float64 `gorm:"precision:8;scale:2;not null"`
+	PhotoUrls  string  `gorm:"type:json"`
+	MainTitle  string  `gorm:"type:varchar(256)"`
+	Subtitle   string  `gorm:"type:varchar(256)"`
+	Status     uint8   `gorm:"not null"`
+	Stock      uint32  `gorm:"not null"`
 }
 
 type ShoppingCart struct {
-	gorm.Model
-	UserID    uint `gorm:"type:bigint;not null"`
-	ProductID uint `gorm:"type:bigint;not null"`
-	Quantity  uint `gorm:"type:bigint;not null"`
+	Model
+	UserID    uint64 `gorm:"not null"`
+	ProductID uint64 `gorm:"not null"`
+	Quantity  uint32 `gorm:"not null"`
+}
+
+type UserAddress struct {
+	Model
+	UserID       uint64 `gorm:"not null"`
+	UserName     string `gorm:"type:varchar(64);not null"`
+	UserPhone    string `gorm:"type:varchar(64);not null"`
+	ProvinceName string `gorm:"type:varchar(64);not null"`
+	CityName     string `gorm:"type:varchar(64);not null"`
+	CountName    string `gorm:"type:varchar(64);not null"`
+	DetialInfo   string `gorm:"type:varchar(256);not null"`
+}
+
+type User struct {
+	Model
+	UnionID string `gorm:"type:varchar(256);unique;not null"`
+	OpenID  string `gorm:"type:varchar(256);unique;not null"`
+	Mobile  string `gorm:"type:varchar(64) ;unique;not null"`
 }
 
 type VirtualStore struct {
-	gorm.Model
-	Name   string `gorm:"type:varchar(64);not null;unique"`
-	Status uint8  `gorm:"type:tinyint;not null;default:0"`
+	Model
+	Name   string `gorm:"not null;unique"`
+	Status uint8  `gorm:"not null;default:0"`
 }
