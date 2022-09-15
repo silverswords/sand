@@ -19,7 +19,13 @@ func (s *users) Create(u *model.User) error {
 	return s.GetDefaultGormDB().Model(model.User{}).Create(u).Error
 }
 
-func (s *users) UpdateMobile(u *model.User) error {
-	return s.GetDefaultGormDB().Model(model.User{}).
-		Where("union_id = ?", u.UnionID).Update("mobile", u.Mobile).Error
+func (s *users) QueryByOpenID(openID string) (*model.User, error) {
+	var user *model.User
+	err := s.GetDefaultGormDB().Model(model.User{}).Where("open_id = ?", openID).First(&user).Error
+
+	return user, err
+}
+
+func (s *users) Update(u *model.User) error {
+	return s.GetDefaultGormDB().Model(model.User{}).Where("id = ?", u.ID).Updates(u).Error
 }

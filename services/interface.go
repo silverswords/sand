@@ -16,7 +16,8 @@ type Service interface {
 
 type Users interface {
 	Create(*model.User) error
-	UpdateMobile(*model.User) error
+	QueryByOpenID(openID string) (*model.User, error)
+	Update(*model.User) error
 }
 
 type Products interface {
