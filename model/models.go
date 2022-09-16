@@ -18,7 +18,6 @@ type Category struct {
 type Order struct {
 	Model
 	UserID        uint64    `gorm:"not null"`
-	ProductID     uint64    `gorm:"not null"`
 	UserAddressID uint64    `gorm:"not null"`
 	TotalPrice    float64   `gorm:"precision:8;scale:2;not null"`
 	Status        uint8     `gorm:"not null;default:0"`

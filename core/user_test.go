@@ -40,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestUpdateMobile(t *testing.T) {
 	var user = model.User{UnionID: "1111", OpenID: "1111", Mobile: "10987654321"}
-	if err := instance.Services().Users().UpdateMobile(&user); err != nil {
+	if err := instance.Services().Users().Update(&user); err != nil {
 		t.Errorf("CreateUser: %v", err)
 	}
 }

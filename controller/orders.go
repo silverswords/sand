@@ -38,7 +38,6 @@ func (c *OrderController) create(ctx *gin.Context) {
 
 	var order = &model.Order{
 		UserID:        req.UserID,
-		ProductID:     req.ProductID,
 		UserAddressID: req.UserAddressID,
 		TotalPrice:    req.TotalPrice,
 	}
