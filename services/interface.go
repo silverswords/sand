@@ -16,7 +16,7 @@ type Service interface {
 
 type Users interface {
 	Create(*model.User) error
-	QueryByOpenID(openID string) (*model.User, error)
+	QueryByOpenID(string) (*model.User, error)
 	Update(*model.User) error
 }
 
@@ -48,10 +48,13 @@ type VirtualStore interface {
 
 type Orders interface {
 	Create(*model.Order) error
+	Modify(*model.Order) error
+	QueryByUserIDAndStatus(uint64, uint8) ([]*model.Order, error)
 }
 
 type OrderDetails interface {
-	Create(*model.OrderDetail) error
+	Create([]*model.OrderDetail) error
+	QueryByOrderID(uint64) ([]*model.OrderDetail, error)
 }
 
 type ShoppingCarts interface {
