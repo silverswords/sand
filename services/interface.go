@@ -21,23 +21,25 @@ type Users interface {
 }
 
 type Products interface {
-	QueryByStoreId(storeID uint8) ([]*model.Product, error)
-	QueryByProductId(id uint8) (*model.Product, error)
-	ListAllProducts() ([]*model.Product, error)
 	Create(*model.Product) error
+	QueryDetialByProductID(id uint64) (*model.Product, error)
+	ListByStoreId(storeID uint64) ([]*model.Product, error)
+	ListByCategoryID(categoryID uint64) ([]*model.Product, error)
+	ListAllProducts() ([]*model.Product, error)
 	ModifyCategoryID(id []uint64, v uint64) error
 	ModifyStoreID(id []uint64, v uint64) error
 	ModifyStatus(id []uint64, v uint8) error
 	ModifyProduct(product *model.Product) error
-	DeleteByStoreID(storeID uint8) error
-	DeleteByProductID(id uint8) error
+	DeleteByStoreID(storeID uint64) error
+	DeleteByProductID(id uint64) error
 }
 
 type Category interface {
 	Create(*model.Category) error
-	ChangeCategoryStatus(id uint8, status uint8) error
-	ChangeCategoryName(id uint8, name string) error
-	ListChildrenByParentID(parentID uint8) ([]*Category, error)
+	ModifyCategoryStatus(id uint64, status uint8) error
+	ModifyCategoryName(id uint64, name string) error
+	ListAllParentDirectory() ([]*Category, error)
+	ListChildrenByParentID(parentID uint64) ([]*Category, error)
 }
 
 type VirtualStore interface {

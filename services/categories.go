@@ -19,15 +19,22 @@ func (s *category) Create(c *model.Category) error {
 	return s.GetDefaultGormDB().Model(model.Category{}).Create(c).Error
 }
 
-func (s *category) ChangeCategoryStatus(id uint8, status uint8) error {
+func (s *category) ModifyCategoryStatus(id uint64, status uint8) error {
 	return s.GetDefaultGormDB().Model(model.Category{}).Where("id = ?", id).Update("status", status).Error
 }
 
-func (s *category) ChangeCategoryName(id uint8, name string) error {
+func (s *category) ModifyCategoryName(id uint64, name string) error {
 	return s.GetDefaultGormDB().Model(model.Category{}).Where("id = ?", id).Update("name", name).Error
 }
 
-func (s *category) ListChildrenByParentID(parentID uint8) ([]*Category, error) {
+func (s *category) ListAllParentDirectory() ([]*Category, error) {
+	var categories []*Category
+	result := s.GetDefaultGormDB().Where("parent_id = ?", 0).Find(&categories)
+	err := result.Error
+	return categories, err
+}
+
+func (s *category) ListChildrenByParentID(parentID uint64) ([]*Category, error) {
 	var categories []*Category
 	result := s.GetDefaultGormDB().Where("parent_id = ?", parentID).Find(&categories)
 	err := result.Error

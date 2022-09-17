@@ -32,21 +32,28 @@ func (s *products) ListAllProducts() ([]*model.Product, error) {
 	return products, err
 }
 
-func (s *products) QueryByProductId(id uint8) (*model.Product, error) {
+func (s *products) ListByCategoryID(categoryID uint64) ([]*model.Product, error) {
+	var products []*model.Product
+	result := s.GetDefaultGormDB().Where("status = ? AND stock > ? AND category_id = ?", 0, 0, categoryID).Find(&products)
+	err := result.Error
+	return products, err
+}
+
+func (s *products) QueryDetialByProductID(id uint64) (*model.Product, error) {
 	var product *model.Product
 	result := s.GetDefaultGormDB().Where("id = ?", id).Find(&product)
 	err := result.Error
 	return product, err
 }
 
-func (s *products) QueryByStoreId(storeID uint8) ([]*model.Product, error) {
+func (s *products) ListByStoreId(storeID uint64) ([]*model.Product, error) {
 	var products []*model.Product
 	result := s.GetDefaultGormDB().Where("store_id = ?", storeID).Find(&products)
 	err := result.Error
 	return products, err
 }
 
-func (s *products) DeleteByProductID(id uint8) error {
+func (s *products) DeleteByProductID(id uint64) error {
 	result := s.GetDefaultGormDB().Where("id = ?", id).Delete(&model.Product{})
 	if result.RowsAffected == 0 {
 		return errInvalidNoRowsAffected
@@ -55,7 +62,7 @@ func (s *products) DeleteByProductID(id uint8) error {
 	return nil
 }
 
-func (s *products) DeleteByStoreID(storeID uint8) error {
+func (s *products) DeleteByStoreID(storeID uint64) error {
 	result := s.GetDefaultGormDB().Where("store_id = ?", storeID).Delete(&model.Product{})
 	if result.RowsAffected == 0 {
 		return errInvalidNoRowsAffected

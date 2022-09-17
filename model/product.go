@@ -36,6 +36,13 @@ func ListAllProducts(db *gorm.DB) ([]*Product, error) {
 	return products, err
 }
 
+func ListByCategoryID(db *gorm.DB, categoryID uint64) ([]*Product, error) {
+	var products []*Product
+	result := db.Where("status = ? AND stock > ? AND category_id = ?", 0, 0, categoryID).Find(&products)
+	err := result.Error
+	return products, err
+}
+
 // Get product detial info by id
 func QueryByProductId(db *gorm.DB, id uint) (*Product, error) {
 	var product *Product
@@ -50,6 +57,26 @@ func QueryByStoreId(db *gorm.DB, storeID uint) ([]*Product, error) {
 	result := db.Where("store_id = ?", storeID).Find(&products)
 	err := result.Error
 	return products, err
+}
+
+// Delete product by product ID
+func DeleteByProductID(db *gorm.DB, id uint) error {
+	result := db.Where("id = ?", id).Delete(&Product{})
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
+}
+
+// Delete all products in virtual store
+func DeleteByStoreID(db *gorm.DB, storeID uint) error {
+	result := db.Where("store_id = ?", storeID).Delete(&Product{})
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
 }
 
 func ModifyCategoryID(db *gorm.DB, id []uint64, v uint64) error {
@@ -86,24 +113,4 @@ func ModifyPrice(db *gorm.DB, id uint64, v interface{}) error {
 
 func ModifyProduct(db *gorm.DB, product *Product) error {
 	return db.Model(Product{}).Where("id = ?", product.ID).Updates(product).Error
-}
-
-// Delete product by product ID
-func DeleteByProductID(db *gorm.DB, id uint) error {
-	result := db.Where("id = ?", id).Delete(&Product{})
-	if result.RowsAffected == 0 {
-		return errInvalidNoRowsAffected
-	}
-
-	return nil
-}
-
-// Delete all products in virtual store
-func DeleteByStoreID(db *gorm.DB, storeID uint) error {
-	result := db.Where("store_id = ?", storeID).Delete(&Product{})
-	if result.RowsAffected == 0 {
-		return errInvalidNoRowsAffected
-	}
-
-	return nil
 }

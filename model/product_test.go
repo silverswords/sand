@@ -156,3 +156,22 @@ func TestModifyProduct(t *testing.T) {
 
 	ModifyProduct(db, &product)
 }
+
+func TestListByCategoryID(t *testing.T) {
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		t.Log("Failed to connect to the database, error: " + err.Error())
+	}
+	db.AutoMigrate(Product{})
+
+	result, err := ListByCategoryID(db, 999)
+	if err != nil {
+		t.Log(err)
+	}
+
+	for _, v := range result {
+		t.Log(v)
+	}
+
+	t.Log(len(result))
+}
