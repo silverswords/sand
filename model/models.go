@@ -66,11 +66,20 @@ type User struct {
 	Model
 	UnionID string `gorm:"type:varchar(256);unique;not null"`
 	OpenID  string `gorm:"type:varchar(256);unique;not null"`
-	Mobile  string `gorm:"type:varchar(64) ;unique;not null"`
+	Mobile  string `gorm:"type:varchar(64);unique;not null"`
 }
 
 type VirtualStore struct {
 	Model
-	Name   string `gorm:"not null;unique"`
-	Status uint8  `gorm:"not null;default:0"`
+	Name     string `gorm:"not null;unique"`
+	Status   uint8  `gorm:"not null;default:0"`
+	Owner    string `gorm:"type:varchar(64);not null"`
+	Mobile   string `gorm:"type:varchar(64);not null"`
+	Describe string `gorm:"not null"`
+}
+
+type Dynamic struct {
+	Model
+	Text      string `gorm:"not null"`
+	PhotoUrls string `gorm:"type:json"`
 }
