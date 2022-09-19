@@ -64,9 +64,9 @@ type UserAddress struct {
 
 type User struct {
 	Model
-	UnionID string `gorm:"type:varchar(256);unique;not null"`
-	OpenID  string `gorm:"type:varchar(256);unique;not null"`
-	Mobile  string `gorm:"type:varchar(64);unique;not null"`
+	UnionID string `gorm:"type:varchar(256);not null"`
+	OpenID  string `gorm:"type:varchar(256);not null"`
+	Mobile  string `gorm:"type:varchar(64);not null"`
 }
 
 type VirtualStore struct {

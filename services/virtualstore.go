@@ -18,3 +18,12 @@ func CreateVirtualStoreService(accessor interfaces.DatabaseAccessor) VirtualStor
 func (s virtualstore) Create(vs *model.VirtualStore) error {
 	return s.GetDefaultGormDB().Model(model.VirtualStore{}).Create(vs).Error
 }
+
+func (s virtualstore) Delete(vs *model.VirtualStore, id uint64) error {
+	result := s.GetDefaultGormDB().Model(model.VirtualStore{}).Where("id = ?", id).Delete(&vs)
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
+}
