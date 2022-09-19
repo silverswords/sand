@@ -11,10 +11,6 @@ import (
 type CategoryController struct {
 }
 
-func NewcategoryController() *CategoryController {
-	return &CategoryController{}
-}
-
 func (c *CategoryController) RegisterRouter(r gin.IRouter) {
 	r.POST("/create", c.create)
 	r.POST("/list/parent-directory", c.listParentDirectories)
@@ -45,7 +41,7 @@ func (c *CategoryController) create(ctx *gin.Context) {
 		Status:   req.Status,
 	}
 
-	if err := sand.Application.Services().Category().Create(category); err != nil {
+	if err := sand.GetApplication().Services().Category().Create(category); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -71,7 +67,7 @@ func (c *CategoryController) listParentDirectories(ctx *gin.Context) {
 		return
 	}
 
-	categories, err := sand.Application.Services().Category().ListAllParentDirectory()
+	categories, err := sand.GetApplication().Services().Category().ListAllParentDirectory()
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -95,7 +91,7 @@ func (c *CategoryController) listSubCategories(ctx *gin.Context) {
 		return
 	}
 
-	categories, err := sand.Application.Services().Category().ListChildrenByParentID(req.ParentID)
+	categories, err := sand.GetApplication().Services().Category().ListChildrenByParentID(req.ParentID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -120,7 +116,7 @@ func (c *CategoryController) modifyStatus(ctx *gin.Context) {
 		return
 	}
 
-	if err := sand.Application.Services().Category().ModifyCategoryStatus(req.ID, req.Status); err != nil {
+	if err := sand.GetApplication().Services().Category().ModifyCategoryStatus(req.ID, req.Status); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -144,7 +140,7 @@ func (c *CategoryController) modifyName(ctx *gin.Context) {
 		return
 	}
 
-	if err := sand.Application.Services().Category().ModifyCategoryName(req.ID, req.Name); err != nil {
+	if err := sand.GetApplication().Services().Category().ModifyCategoryName(req.ID, req.Name); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return

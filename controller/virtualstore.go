@@ -11,10 +11,6 @@ import (
 type VirtualStoreController struct {
 }
 
-func NewVirtualStoreController() *VirtualStoreController {
-	return &VirtualStoreController{}
-}
-
 func (c *VirtualStoreController) RegisterRouter(r gin.IRouter) {
 	r.POST("/create", c.create)
 }
@@ -39,7 +35,7 @@ func (c *VirtualStoreController) create(ctx *gin.Context) {
 		Status: req.Status,
 	}
 
-	if err := sand.Application.Services().VirtualStore().Create(virtualStore); err != nil {
+	if err := sand.GetApplication().Services().VirtualStore().Create(virtualStore); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return

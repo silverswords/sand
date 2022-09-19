@@ -11,10 +11,6 @@ import (
 type UserController struct {
 }
 
-func NewUserController() *UserController {
-	return &UserController{}
-}
-
 func (c *UserController) RegisterRouter(r gin.IRouter) {
 	r.GET("/info", c.getUserInfo)
 }
@@ -27,7 +23,7 @@ func (c *UserController) getUserInfo(ctx *gin.Context) {
 		return
 	}
 
-	info, err := sand.Application.Services().Users().QueryByOpenID(value)
+	info, err := sand.GetApplication().Services().Users().QueryByOpenID(value)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})

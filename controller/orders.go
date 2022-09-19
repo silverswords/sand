@@ -16,17 +16,13 @@ type OrderInfo struct {
 	Details []*model.OrderDetail
 }
 
-func NewOrderController() *OrderController {
-	return &OrderController{}
-}
-
 func (c *OrderController) RegisterRouter(r gin.IRouter) {
-	r.POST("/create", c.Create)
-	r.POST("/modify/status", c.ModifyStatus)
-	r.POST("/info", c.ListOrdersByUserIDAndStatus)
+	r.POST("/create", c.create)
+	r.POST("/modify/status", c.modifyStatus)
+	r.POST("/info", c.listOrdersByUserIDAndStatus)
 }
 
-func (c *OrderController) Create(ctx *gin.Context) {
+func (c *OrderController) create(ctx *gin.Context) {
 	var (
 		req struct {
 			UserID        uint64              `json:"user_id,omitempty"`
@@ -52,9 +48,9 @@ func (c *OrderController) Create(ctx *gin.Context) {
 		TotalPrice:    req.TotalPrice,
 	}
 
-	if err = sand.Application.Services().Orders().Create(order); err != nil {
+	if err = sand.GetApplication().Services().Orders().Create(order); err != nil {
 		ctx.Error(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
@@ -69,16 +65,16 @@ func (c *OrderController) Create(ctx *gin.Context) {
 		orderDetails = append(orderDetails, orderDetail)
 	}
 
-	if err = sand.Application.Services().OrderDetails().Create(orderDetails); err != nil {
+	if err = sand.GetApplication().Services().OrderDetails().Create(orderDetails); err != nil {
 		ctx.Error(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "order_id": order.ID})
 }
 
-func (c *OrderController) ModifyStatus(ctx *gin.Context) {
+func (c *OrderController) modifyStatus(ctx *gin.Context) {
 	var (
 		req struct {
 			OrderID uint64 `json:"order_id"`
@@ -99,16 +95,16 @@ func (c *OrderController) ModifyStatus(ctx *gin.Context) {
 	}
 	order.ID = req.OrderID
 
-	if err = sand.Application.Services().Orders().Modify(order); err != nil {
+	if err = sand.GetApplication().Services().Orders().Modify(order); err != nil {
 		ctx.Error(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"statue": http.StatusOK})
 }
 
-func (c *OrderController) ListOrdersByUserIDAndStatus(ctx *gin.Context) {
+func (c *OrderController) listOrdersByUserIDAndStatus(ctx *gin.Context) {
 	var (
 		req struct {
 			UserID uint64 `json:"user_id"`
@@ -125,20 +121,20 @@ func (c *OrderController) ListOrdersByUserIDAndStatus(ctx *gin.Context) {
 		return
 	}
 
-	orders, err := sand.Application.Services().Orders().QueryByUserIDAndStatus(req.UserID, req.Status)
+	orders, err := sand.GetApplication().Services().Orders().QueryByUserIDAndStatus(req.UserID, req.Status)
 	if err != nil {
 		ctx.Error(err)
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
 	for _, order := range orders {
 		var orderInfo OrderInfo
 		orderInfo.Order = order
-		details, err := sand.Application.Services().OrderDetails().QueryByOrderID(order.ID)
+		details, err := sand.GetApplication().Services().OrderDetails().QueryByOrderID(order.ID)
 		if err != nil {
 			ctx.Error(err)
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+			ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 			return
 		}
 

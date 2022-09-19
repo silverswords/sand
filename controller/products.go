@@ -11,10 +11,6 @@ import (
 type ProductController struct {
 }
 
-func NewProductController() *ProductController {
-	return &ProductController{}
-}
-
 func (c *ProductController) RegisterRouter(r gin.IRouter) {
 	r.POST("/create", c.create)
 	r.POST("/detial", c.detial)
@@ -59,7 +55,7 @@ func (c *ProductController) create(ctx *gin.Context) {
 		Stock:      req.Stock,
 	}
 
-	if err := sand.Application.Services().Products().Create(product); err != nil {
+	if err := sand.GetApplication().Services().Products().Create(product); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
@@ -76,7 +72,7 @@ func (c *ProductController) detial(ctx *gin.Context) {
 	)
 	ctx.ShouldBind(&req)
 
-	product, err := sand.Application.Services().Products().QueryDetialByProductID(req.ProductID)
+	product, err := sand.GetApplication().Services().Products().QueryDetialByProductID(req.ProductID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -87,7 +83,7 @@ func (c *ProductController) detial(ctx *gin.Context) {
 }
 
 func (c *ProductController) listDefault(ctx *gin.Context) {
-	products, err := sand.Application.Services().Products().ListAllProducts()
+	products, err := sand.GetApplication().Services().Products().ListAllProducts()
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -104,7 +100,7 @@ func (c *ProductController) listByCategoryID(ctx *gin.Context) {
 		}
 	)
 
-	products, err := sand.Application.Services().Products().ListByCategoryID(req.CategoryID)
+	products, err := sand.GetApplication().Services().Products().ListByCategoryID(req.CategoryID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -121,7 +117,7 @@ func (c *ProductController) listByStoreID(ctx *gin.Context) {
 		}
 	)
 
-	products, err := sand.Application.Services().Products().ListByStoreId(req.StoreID)
+	products, err := sand.GetApplication().Services().Products().ListByStoreId(req.StoreID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
