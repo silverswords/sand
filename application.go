@@ -2,30 +2,58 @@ package sand
 
 import (
 	"fmt"
+	"io/ioutil"
 
+	json "github.com/json-iterator/go"
 	"github.com/silverswords/sand/core"
 	"github.com/silverswords/sand/services"
 )
 
-var Application *core.Application
+var application *core.Application
+
+type Config struct {
+	Host     string
+	Port     string
+	Database string
+	UserName string
+	Password string
+	Charset  string
+}
 
 func init() {
+	c := &Config{}
+
+	data, err := ioutil.ReadFile("./config/sql.json")
+	if err != nil {
+		panic(err)
+	}
+
+	if err = json.Unmarshal(data, c); err != nil {
+		panic(err)
+	}
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=%t&loc=%s",
-		"root", "my-123456", "mqying.xyz", "3306", "mall", "utf8", true, "Local")
+		c.UserName, c.Password, c.Host, c.Port, c.Database, c.Charset, true, "Local")
 
 	config := &core.Config{
 		Dsn: dsn,
 	}
 
-	Application = core.CreateApplication(config)
-	usersService := services.CreateUsersService(Application)
-	productsService := services.CreateProductsService(Application)
-	categoryService := services.CreateCategoryService(Application)
-	ordersService := services.CreateOrdersService(Application)
-	orderDetailsService := services.CreateOrderDetailsService(Application)
-	shoppingCartsService := services.CreateShoppingCartsService(Application)
-	virtualStore := services.CreateVirtualStoreService(Application)
+	application = core.CreateApplication(config)
+
+	usersService := services.CreateUsersService(application)
+	productsService := services.CreateProductsService(application)
+	categoryService := services.CreateCategoryService(application)
+	ordersService := services.CreateOrdersService(application)
+	orderDetailsService := services.CreateOrderDetailsService(application)
+	shoppingCartsService := services.CreateShoppingCartsService(application)
+	virtualStore := services.CreateVirtualStoreService(application)
+
 	service := services.CreateService(usersService, productsService, categoryService,
 		ordersService, orderDetailsService, shoppingCartsService, virtualStore)
-	Application.SetServices(&service)
+	application.SetServices(&service)
+}
+
+func GetApplication() *core.Application {
+	return application
 }
