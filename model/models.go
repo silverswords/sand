@@ -3,9 +3,9 @@ package model
 import "time"
 
 type Model struct {
-	ID        uint64 `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uint64    `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Category struct {
@@ -17,19 +17,19 @@ type Category struct {
 
 type Order struct {
 	Model
-	UserID        uint64    `gorm:"not null"`
-	UserAddressID uint64    `gorm:"not null"`
-	TotalPrice    float64   `gorm:"precision:8;scale:2;not null"`
-	Status        uint8     `gorm:"not null;default:0"`
-	PayTime       time.Time `gorm:"default:null"`
+	UserID        uint64    `gorm:"not null"                     json:"user_id"`
+	UserAddressID uint64    `gorm:"not null"                     json:"user_address_id"`
+	TotalPrice    float64   `gorm:"precision:8;scale:2;not null" json:"total_price"`
+	Status        uint8     `gorm:"not null;default:0"           json:"status"`
+	PayTime       time.Time `gorm:"default:null"                 json:"pay_time"`
 }
 
 type OrderDetail struct {
 	Model
-	OrderID   uint64  `gorm:"not null"`
-	ProductID uint64  `gorm:"not null"`
-	Quantity  uint32  `gorm:"not null"`
-	Price     float64 `gorm:"precision:8;scale:2;not null"`
+	OrderID   uint64  `gorm:"not null"                     json:"order_id"`
+	ProductID uint64  `gorm:"not null"                     json:"product_id"`
+	Quantity  uint32  `gorm:"not null"                     json:"quantity"`
+	Price     float64 `gorm:"precision:8;scale:2;not null" json:"price"`
 }
 
 type Product struct {

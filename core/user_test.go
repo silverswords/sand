@@ -23,16 +23,15 @@ func init() {
 	productsService := services.CreateProductsService(instance)
 	categoryService := services.CreateCategoryService(instance)
 	ordersService := services.CreateOrdersService(instance)
-	orderDetailsService := services.CreateOrderDetailsService(instance)
 	shoppingCartsService := services.CreateShoppingCartsService(instance)
 	virtualStore := services.CreateVirtualStoreService(instance)
 	service := services.CreateService(usersService, productsService, categoryService,
-		ordersService, orderDetailsService, shoppingCartsService, virtualStore)
+		ordersService, shoppingCartsService, virtualStore)
 	instance.SetServices(&service)
 }
 
 func TestCreateUser(t *testing.T) {
-	var user = model.User{UnionID: "1111", OpenID: "11111", Mobile: "12345678901"}
+	var user = model.User{UnionID: "111111", OpenID: "15111", Mobile: "134567890"}
 	if err := instance.Services().Users().Create(&user); err != nil {
 		t.Errorf("CreateUser: %v", err)
 	}

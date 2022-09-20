@@ -45,12 +45,11 @@ func init() {
 	productsService := services.CreateProductsService(application)
 	categoryService := services.CreateCategoryService(application)
 	ordersService := services.CreateOrdersService(application)
-	orderDetailsService := services.CreateOrderDetailsService(application)
 	shoppingCartsService := services.CreateShoppingCartsService(application)
 	virtualStore := services.CreateVirtualStoreService(application)
 
 	service := services.CreateService(usersService, productsService, categoryService,
-		ordersService, orderDetailsService, shoppingCartsService, virtualStore)
+		ordersService, shoppingCartsService, virtualStore)
 	application.SetServices(&service)
 }
 

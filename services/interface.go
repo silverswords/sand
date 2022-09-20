@@ -9,7 +9,6 @@ type Service interface {
 	Products() Products
 	Category() Category
 	Orders() Orders
-	OrderDetails() OrderDetails
 	ShoppingCarts() ShoppingCarts
 	VirtualStore() VirtualStore
 }
@@ -41,14 +40,10 @@ type Category interface {
 }
 
 type Orders interface {
-	Create(*model.Order) error
+	Create(o *model.Order, d []*model.OrderDetail) error
 	Modify(*model.Order) error
-	QueryByUserIDAndStatus(uint64, uint8) ([]*model.Order, error)
-}
-
-type OrderDetails interface {
-	Create([]*model.OrderDetail) error
-	QueryByOrderID(uint64) ([]*model.OrderDetail, error)
+	QueryByUserIDAndStatus(uint64, uint8) ([]*orderInfo, error)
+	QueryDetailsByOrderID(orderID uint64) ([]*model.OrderDetail, error)
 }
 
 type ShoppingCarts interface {
@@ -58,6 +53,7 @@ type ShoppingCarts interface {
 type VirtualStore interface {
 	Create(*model.VirtualStore) error
 }
+
 type Dynamic interface {
 	Create(*model.Dynamic) error
 }
