@@ -25,9 +25,9 @@ func (s *products) Create(p *model.Product) error {
 	return s.GetDefaultGormDB().Model(model.Product{}).Create(p).Error
 }
 
-func (s *products) ListAllProducts() ([]*model.Product, error) {
+func (s *products) ListAllProducts(categoryID uint64) ([]*model.Product, error) {
 	var products []*model.Product
-	result := s.GetDefaultGormDB().Where("status = ? AND stock > ?", 0, 0).Find(&products)
+	result := s.GetDefaultGormDB().Where("status = ? AND stock > ? AND category_id = ?", 0, 0, categoryID).Find(&products)
 	err := result.Error
 	return products, err
 }
@@ -44,6 +44,12 @@ func (s *products) QueryDetialByProductID(id uint64) (*model.Product, error) {
 	result := s.GetDefaultGormDB().Where("id = ?", id).Find(&product)
 	err := result.Error
 	return product, err
+}
+
+func (s *products) QueryStockByProductID(id uint64) (uint32, error) {
+	var product model.Product
+	err := s.GetDefaultGormDB().Select("stock").Where("id = ?", id).Find(&product).Error
+	return product.Stock, err
 }
 
 func (s *products) ListByStoreId(storeID uint64) ([]*model.Product, error) {
@@ -73,16 +79,4 @@ func (s *products) DeleteByStoreID(storeID uint64) error {
 
 func (s *products) ModifyProduct(product *model.Product) error {
 	return s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", product.ID).Updates(product).Error
-}
-
-func (s *products) ModifyCategoryID(id []uint64, v uint64) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{CategoryID: v}).Error
-}
-
-func (s *products) ModifyStoreID(id []uint64, v uint64) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{StoreID: v}).Error
-}
-
-func (s *products) ModifyStatus(id []uint64, v uint8) error {
-	return s.GetDefaultGormDB().Model(model.Product{}).Where("id IN ?", id).Updates(model.Product{Status: v}).Error
 }

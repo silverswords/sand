@@ -23,12 +23,10 @@ type Users interface {
 type Products interface {
 	Create(*model.Product) error
 	QueryDetialByProductID(id uint64) (*model.Product, error)
+	QueryStockByProductID(id uint64) (uint32, error)
 	ListByStoreId(storeID uint64) ([]*model.Product, error)
 	ListByCategoryID(categoryID uint64) ([]*model.Product, error)
-	ListAllProducts() ([]*model.Product, error)
-	ModifyCategoryID(id []uint64, v uint64) error
-	ModifyStoreID(id []uint64, v uint64) error
-	ModifyStatus(id []uint64, v uint8) error
+	ListAllProducts(categoryID uint64) ([]*model.Product, error)
 	ModifyProduct(product *model.Product) error
 	DeleteByStoreID(storeID uint64) error
 	DeleteByProductID(id uint64) error
@@ -40,10 +38,6 @@ type Category interface {
 	ModifyCategoryName(id uint64, name string) error
 	ListAllParentDirectory() ([]*Category, error)
 	ListChildrenByParentID(parentID uint64) ([]*Category, error)
-}
-
-type VirtualStore interface {
-	Create(*model.VirtualStore) error
 }
 
 type Orders interface {
@@ -59,4 +53,11 @@ type OrderDetails interface {
 
 type ShoppingCarts interface {
 	Create(*model.ShoppingCart) error
+}
+
+type VirtualStore interface {
+	Create(*model.VirtualStore) error
+}
+type Dynamic interface {
+	Create(*model.Dynamic) error
 }
