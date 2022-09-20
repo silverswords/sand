@@ -11,6 +11,7 @@ type Service interface {
 	Orders() Orders
 	ShoppingCarts() ShoppingCarts
 	VirtualStore() VirtualStore
+	WeChat() WeChat
 }
 
 type Users interface {
@@ -56,4 +57,8 @@ type VirtualStore interface {
 
 type Dynamic interface {
 	Create(*model.Dynamic) error
+}
+
+type WeChat interface {
+	Login(code string) (*LoginResponse, error)
 }

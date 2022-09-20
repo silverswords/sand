@@ -25,8 +25,9 @@ func init() {
 	ordersService := services.CreateOrdersService(instance)
 	shoppingCartsService := services.CreateShoppingCartsService(instance)
 	virtualStore := services.CreateVirtualStoreService(instance)
+	weChat := services.CreateWeChatService()
 	service := services.CreateService(usersService, productsService, categoryService,
-		ordersService, shoppingCartsService, virtualStore)
+		ordersService, shoppingCartsService, virtualStore, weChat)
 	instance.SetServices(&service)
 }
 
