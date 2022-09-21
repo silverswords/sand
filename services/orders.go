@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/silverswords/sand/core/interfaces"
 	"github.com/silverswords/sand/model"
 	"gorm.io/gorm"
@@ -23,6 +25,10 @@ func CreateOrdersService(accessor interfaces.DatabaseAccessor) Orders {
 
 func (s *orders) Create(o *model.Order, d []*model.OrderDetail) error {
 	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
+		var (
+			product *model.Product
+		)
+
 		if err := tx.Model(model.Order{}).Create(o).Error; err != nil {
 			return err
 		}
@@ -33,6 +39,23 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail) error {
 
 		if err := tx.Model(model.OrderDetail{}).Create(d).Error; err != nil {
 			return err
+		}
+
+		for _, detail := range d {
+			err := tx.Model(model.Product{}).Where("id = ?", detail.ProductID).Take(&product).Error
+			if err != nil {
+				return err
+			}
+
+			if product.Stock < detail.Quantity {
+				return fmt.Errorf("product[%d] stock is not enough", detail.ProductID)
+			}
+
+			err = tx.Model(model.Product{}).Where("id = ?", detail.ProductID).
+				Update("stock", (product.Stock - detail.Quantity)).Error
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
