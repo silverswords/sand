@@ -44,7 +44,7 @@ type Product struct {
 	Stock      uint32  `gorm:"not null"`
 }
 
-type ShoppingCart struct {
+type CartItem struct {
 	Model
 	UserID    uint64 `gorm:"not null"`
 	ProductID uint64 `gorm:"not null"`
