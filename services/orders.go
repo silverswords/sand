@@ -23,12 +23,8 @@ func CreateOrdersService(accessor interfaces.DatabaseAccessor) Orders {
 	}
 }
 
-func (s *orders) Create(o *model.Order, d []*model.OrderDetail) error {
+func (s *orders) Create(o *model.Order, d []*model.OrderDetail, fromCart bool) error {
 	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
-		var (
-			product *model.Product
-		)
-
 		if err := tx.Model(model.Order{}).Create(o).Error; err != nil {
 			return err
 		}
@@ -42,6 +38,10 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail) error {
 		}
 
 		for _, detail := range d {
+			var (
+				product *model.Product
+			)
+
 			err := tx.Model(model.Product{}).Where("id = ?", detail.ProductID).Take(&product).Error
 			if err != nil {
 				return err
@@ -55,6 +55,14 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail) error {
 				Update("stock", (product.Stock - detail.Quantity)).Error
 			if err != nil {
 				return err
+			}
+
+			if fromCart {
+				err = tx.Model(model.CartItem{}).Where("product_id = ? AND quantity = ?", detail.ProductID, detail.Quantity).
+					Delete(&model.CartItem{}).Error
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -101,4 +109,46 @@ func (s *orders) QueryDetailsByOrderID(orderID uint64) ([]*model.OrderDetail, er
 		Find(&details).Error
 
 	return details, err
+}
+
+func (s *orders) Delete(orderID uint64) error {
+	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
+		var (
+			orderDetails []*model.OrderDetail
+		)
+
+		err := tx.Model(model.Order{}).Delete(model.Order{}, orderID).Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.Model(model.OrderDetail{}).Where("order_id = ?", orderID).Find(&orderDetails).Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.Model(model.OrderDetail{}).Where("order_id = ?", orderID).Delete(&model.OrderDetail{}).Error
+		if err != nil {
+			return err
+		}
+
+		for _, orderDetail := range orderDetails {
+			var (
+				product *model.Product
+			)
+
+			err = tx.Model(model.Product{}).Where("id", orderDetail.ProductID).Take(&product).Error
+			if err != nil {
+				return err
+			}
+
+			err = tx.Model(model.Product{}).Where("id = ?", orderDetail.ProductID).
+				Update("stock", (product.Stock + orderDetail.Quantity)).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,14 +13,16 @@ type OrderController struct {
 
 func (c *OrderController) RegisterRouter(r gin.IRouter) {
 	r.POST("/create", c.create)
-	r.POST("/modify/status", c.modifyStatus)
+	r.POST("/delete", c.delete)
 	r.POST("/infos", c.listOrdersByUserIDAndStatus)
 	r.POST("/detail", c.detailByOrderID)
+	r.POST("/modify/status", c.modifyStatus)
 }
 
 func (c *OrderController) create(ctx *gin.Context) {
 	var (
 		req struct {
+			FromCart      bool                `json:"from_cart,omitempty"`
 			UserID        uint64              `json:"user_id,omitempty"`
 			UserAddressID uint64              `json:"user_address_id,omitempty"`
 			TotalPrice    float64             `json:"total_price,omitempty"`
@@ -54,7 +55,7 @@ func (c *OrderController) create(ctx *gin.Context) {
 		orderDetails = append(orderDetails, orderDetail)
 	}
 
-	if err = sand.GetApplication().Services().Orders().Create(order, orderDetails); err != nil {
+	if err = sand.GetApplication().Services().Orders().Create(order, orderDetails, req.FromCart); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
@@ -78,8 +79,6 @@ func (c *OrderController) modifyStatus(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
-
-	fmt.Print(req)
 
 	order := &model.Order{
 		Status: req.Status,
@@ -143,4 +142,29 @@ func (c *OrderController) detailByOrderID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "order_detail": orderDetail})
+}
+
+func (c *OrderController) delete(ctx *gin.Context) {
+	var (
+		req struct {
+			OrderID uint64 `json:"order_id"`
+		}
+		err error
+	)
+
+	err = ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		return
+	}
+
+	err = sand.GetApplication().Services().Orders().Delete(req.OrderID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }
