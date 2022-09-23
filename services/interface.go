@@ -65,4 +65,5 @@ type Dynamic interface {
 
 type WeChat interface {
 	Login(string) (*LoginResponse, error)
+	GetAccessToken() (string, error)
 }

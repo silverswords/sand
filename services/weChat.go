@@ -8,13 +8,9 @@ import (
 	"net/http"
 )
 
-type weChat struct {
-	client *http.Client
-}
-
 type config struct {
-	AppID     string
-	AppSecret string
+	AppID     string `json:"app_id"`
+	AppSecret string `json:"app_secret"`
 }
 
 type LoginResponse struct {
@@ -25,13 +21,54 @@ type LoginResponse struct {
 	ErrMsg     string
 }
 
+type TokenResp struct {
+	AccessToken string
+	ExpiresIn   int
+	ErrCode     int
+	ErrMsg      string
+}
+
+type weChat struct {
+	client *http.Client
+	token  *TokenResp
+}
+
+const (
+	code2Session = iota
+	getAccessToken
+	getUnlimited
+)
+
+var url = []string{
+	"https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+	"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
+	"https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=ACCESS_TOKEN",
+}
+
 func CreateWeChatService() WeChat {
-	return &weChat{client: http.DefaultClient}
+	return &weChat{
+		client: http.DefaultClient,
+		token:  &TokenResp{},
+	}
+}
+
+func get(client *http.Client, url string) ([]byte, error) {
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf, nil
 }
 
 func getConfig() *config {
 	c := &config{}
-	data, err := ioutil.ReadFile("./config/app.json")
+	data, err := ioutil.ReadFile("../config/app.json")
 	if err != nil {
 		panic(err)
 	}
@@ -45,27 +82,44 @@ func getConfig() *config {
 
 func (s *weChat) Login(code string) (*LoginResponse, error) {
 	config := getConfig()
-	url := fmt.Sprintf(`"https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s
-	&grant_type=authorization_code"`, config.AppID, config.AppSecret, code)
+	url := fmt.Sprintf(url[code2Session], config.AppID, config.AppSecret, code)
 
-	resp, err := s.client.Get(url)
+	buf, err := get(s.client, url)
 	if err != nil {
 		return nil, err
 	}
 
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var loginResp *LoginResponse
-	if err := json.Unmarshal(buf, loginResp); err != nil {
+	var loginResp LoginResponse
+	if err := json.Unmarshal(buf, &loginResp); err != nil {
 		return nil, err
 	}
 
 	if loginResp.ErrCode != 0 {
-		return loginResp, errors.New(loginResp.ErrMsg)
+		return nil, errors.New(loginResp.ErrMsg)
 	}
 
-	return loginResp, nil
+	return &loginResp, nil
+}
+
+func (s *weChat) GetAccessToken() (string, error) {
+	if s.token.ExpiresIn < 600 {
+		config := getConfig()
+		url := fmt.Sprintf(url[getAccessToken], config.AppID, config.AppSecret)
+
+		buf, err := get(s.client, url)
+		if err != nil {
+			return "", err
+		}
+
+		var tokenResp TokenResp
+		if err := json.Unmarshal(buf, &tokenResp); err != nil {
+			return "", err
+		}
+
+		if tokenResp.ErrCode != 0 {
+			return "", errors.New(tokenResp.ErrMsg)
+		}
+	}
+
+	return s.token.AccessToken, nil
 }
