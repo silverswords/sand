@@ -41,10 +41,11 @@ type Category interface {
 }
 
 type Orders interface {
-	Create(*model.Order, []*model.OrderDetail, bool) error
-	Modify(*model.Order) error
+	Create(*model.Order, []*model.OrderDetail, *model.UserAddress, bool) error
 	QueryByUserIDAndStatus(uint64, uint8) ([]*orderInfo, error)
-	QueryDetailsByOrderID(uint64) ([]*model.OrderDetail, error)
+	QueryDetailsByOrderID(uint64) (*orderDetail, error)
+	ModifyStatus(uint64, uint8) error
+	ModifyAddress(*model.UserAddress) error
 	Delete(uint64) error
 }
 
