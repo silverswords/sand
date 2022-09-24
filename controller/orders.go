@@ -17,6 +17,7 @@ func (c *OrderController) RegisterRouter(r gin.IRouter) {
 	r.POST("/infos", c.listOrdersByUserIDAndStatus)
 	r.POST("/detail", c.detailByOrderID)
 	r.POST("/modify/status", c.modifyStatus)
+	r.POST("/modify/address", c.modifyAddress)
 }
 
 func (c *OrderController) create(ctx *gin.Context) {
@@ -27,6 +28,12 @@ func (c *OrderController) create(ctx *gin.Context) {
 			UserAddressID uint64              `json:"user_address_id,omitempty"`
 			TotalPrice    float64             `json:"total_price,omitempty"`
 			Details       []model.OrderDetail `json:"details,omitempty"`
+			Name          string              `json:"name,omitempty"`
+			Phone         string              `json:"phone,omitempty"`
+			ProvinceName  string              `json:"province_name,omitempty"`
+			CityName      string              `json:"city_name,omitempty"`
+			CountName     string              `json:"county_name,omitempty"`
+			DetailInfo    string              `json:"detail_info,omitempty"`
 		}
 		orderDetails []*model.OrderDetail
 		err          error
@@ -45,6 +52,15 @@ func (c *OrderController) create(ctx *gin.Context) {
 		TotalPrice:    req.TotalPrice,
 	}
 
+	address := &model.UserAddress{
+		UserName:     req.Name,
+		UserPhone:    req.Phone,
+		ProvinceName: req.ProvinceName,
+		CityName:     req.CityName,
+		CountName:    req.CountName,
+		DetialInfo:   req.DetailInfo,
+	}
+
 	for _, detail := range req.Details {
 		orderDetail := &model.OrderDetail{
 			ProductID: detail.ProductID,
@@ -55,7 +71,7 @@ func (c *OrderController) create(ctx *gin.Context) {
 		orderDetails = append(orderDetails, orderDetail)
 	}
 
-	if err = sand.GetApplication().Services().Orders().Create(order, orderDetails, req.FromCart); err != nil {
+	if err = sand.GetApplication().Services().Orders().Create(order, orderDetails, address, req.FromCart); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
@@ -80,12 +96,7 @@ func (c *OrderController) modifyStatus(ctx *gin.Context) {
 		return
 	}
 
-	order := &model.Order{
-		Status: req.Status,
-	}
-	order.ID = req.OrderID
-
-	if err = sand.GetApplication().Services().Orders().Modify(order); err != nil {
+	if err = sand.GetApplication().Services().Orders().ModifyStatus(req.OrderID, req.Status); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
@@ -163,6 +174,45 @@ func (c *OrderController) delete(ctx *gin.Context) {
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+}
+
+func (c *OrderController) modifyAddress(ctx *gin.Context) {
+	var (
+		req struct {
+			Name         string `json:"name,omitempty"`
+			Phone        string `json:"phone,omitempty"`
+			ProvinceName string `json:"province_name,omitempty"`
+			CityName     string `json:"city_name,omitempty"`
+			CountName    string `json:"county_name,omitempty"`
+			DetailInfo   string `json:"detail_info,omitempty"`
+		}
+		err error
+	)
+
+	err = ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		return
+	}
+
+	var address = &model.UserAddress{
+		UserName:     req.Name,
+		UserPhone:    req.Phone,
+		ProvinceName: req.ProvinceName,
+		CityName:     req.CityName,
+		CountName:    req.CountName,
+		DetialInfo:   req.DetailInfo,
+	}
+
+	err = sand.GetApplication().Services().Orders().ModifyAddress(address)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
 
