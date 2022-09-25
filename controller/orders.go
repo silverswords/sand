@@ -23,17 +23,16 @@ func (c *OrderController) RegisterRouter(r gin.IRouter) {
 func (c *OrderController) create(ctx *gin.Context) {
 	var (
 		req struct {
-			FromCart      bool                `json:"from_cart,omitempty"`
-			UserID        uint64              `json:"user_id,omitempty"`
-			UserAddressID uint64              `json:"user_address_id,omitempty"`
-			TotalPrice    float64             `json:"total_price,omitempty"`
-			Details       []model.OrderDetail `json:"details,omitempty"`
-			Name          string              `json:"name,omitempty"`
-			Phone         string              `json:"phone,omitempty"`
-			ProvinceName  string              `json:"province_name,omitempty"`
-			CityName      string              `json:"city_name,omitempty"`
-			CountName     string              `json:"county_name,omitempty"`
-			DetailInfo    string              `json:"detail_info,omitempty"`
+			FromCart     bool                `json:"from_cart,omitempty"`
+			UserID       uint64              `json:"user_id,omitempty"`
+			TotalPrice   float64             `json:"total_price,omitempty"`
+			Details      []model.OrderDetail `json:"details,omitempty"`
+			Name         string              `json:"name,omitempty"`
+			Phone        string              `json:"phone,omitempty"`
+			ProvinceName string              `json:"province_name,omitempty"`
+			CityName     string              `json:"city_name,omitempty"`
+			CountyName   string              `json:"county_name,omitempty"`
+			DetailInfo   string              `json:"detail_info,omitempty"`
 		}
 		orderDetails []*model.OrderDetail
 		err          error
@@ -47,18 +46,18 @@ func (c *OrderController) create(ctx *gin.Context) {
 	}
 
 	order := &model.Order{
-		UserID:        req.UserID,
-		UserAddressID: req.UserAddressID,
-		TotalPrice:    req.TotalPrice,
+		UserID:     req.UserID,
+		TotalPrice: req.TotalPrice,
 	}
 
 	address := &model.UserAddress{
+		UserID:       req.UserID,
 		UserName:     req.Name,
 		UserPhone:    req.Phone,
 		ProvinceName: req.ProvinceName,
 		CityName:     req.CityName,
-		CountName:    req.CountName,
-		DetialInfo:   req.DetailInfo,
+		CountyName:   req.CountyName,
+		DetailInfo:   req.DetailInfo,
 	}
 
 	for _, detail := range req.Details {
@@ -183,11 +182,12 @@ func (c *OrderController) delete(ctx *gin.Context) {
 func (c *OrderController) modifyAddress(ctx *gin.Context) {
 	var (
 		req struct {
+			OrderID      uint64 `json:"order_id,omitempty"`
 			Name         string `json:"name,omitempty"`
 			Phone        string `json:"phone,omitempty"`
 			ProvinceName string `json:"province_name,omitempty"`
 			CityName     string `json:"city_name,omitempty"`
-			CountName    string `json:"county_name,omitempty"`
+			CountyName   string `json:"county_name,omitempty"`
 			DetailInfo   string `json:"detail_info,omitempty"`
 		}
 		err error
@@ -205,11 +205,11 @@ func (c *OrderController) modifyAddress(ctx *gin.Context) {
 		UserPhone:    req.Phone,
 		ProvinceName: req.ProvinceName,
 		CityName:     req.CityName,
-		CountName:    req.CountName,
-		DetialInfo:   req.DetailInfo,
+		CountyName:   req.CountyName,
+		DetailInfo:   req.DetailInfo,
 	}
 
-	err = sand.GetApplication().Services().Orders().ModifyAddress(address)
+	err = sand.GetApplication().Services().Orders().ModifyAddress(req.OrderID, address)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})

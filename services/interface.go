@@ -45,7 +45,7 @@ type Orders interface {
 	QueryByUserIDAndStatus(uint64, uint8) ([]*orderInfo, error)
 	QueryDetailsByOrderID(uint64) (*orderDetail, error)
 	ModifyStatus(uint64, uint8) error
-	ModifyAddress(*model.UserAddress) error
+	ModifyAddress(uint64, *model.UserAddress) error
 	Delete(uint64) error
 }
 

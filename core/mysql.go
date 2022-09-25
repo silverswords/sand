@@ -21,7 +21,7 @@ func NewMysqlDatabase(types, dsn string) *mysqlDatabase {
 		session := db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_bin").Session(&gorm.Session{})
 
 		session.AutoMigrate(&model.User{}, &model.Product{}, &model.Category{},
-			&model.Order{}, &model.OrderDetail{}, &model.CartItem{})
+			&model.Order{}, &model.OrderDetail{}, &model.CartItem{}, model.UserAddress{})
 
 		migrator := session.Migrator()
 		if !migrator.HasTable(&model.User{}) {
