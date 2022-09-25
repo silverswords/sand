@@ -37,6 +37,7 @@ type Product struct {
 	StoreID    uint64  `gorm:"not null;default:0"`
 	CategoryID uint64  `gorm:"not null"`
 	Price      float64 `gorm:"precision:8;scale:2;not null"`
+	Spec       string  `gorm:"varchar(64);not null"`
 	PhotoUrls  string  `gorm:"type:json"`
 	MainTitle  string  `gorm:"type:varchar(256)"`
 	Subtitle   string  `gorm:"type:varchar(256)"`

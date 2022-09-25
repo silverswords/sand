@@ -29,6 +29,7 @@ func (c *ProductController) create(ctx *gin.Context) {
 			PhotoUrls  string  `json:"photo_urls,omitempty"`
 			MainTitle  string  `json:"main_title,omitempty"`
 			Subtitle   string  `json:"subtitle,omitempty"`
+			Spec       string  `json:"spec,omitempty"`
 			Status     uint8   `json:"status,omitempty"`
 			Stock      uint32  `json:"stock,omitempty"`
 		}
@@ -161,6 +162,7 @@ func (c *ProductController) modifyProperty(ctx *gin.Context) {
 			PhotoUrls  string  `json:"photo_urls,omitempty"`
 			MainTitle  string  `json:"main_title,omitempty"`
 			Subtitle   string  `json:"subtitle,omitempty"`
+			Spec       string  `json:"spec,omitempty"`
 			Status     uint8   `json:"status,omitempty"`
 			Stock      uint32  `json:"stock,omitempty"`
 		}
@@ -172,6 +174,7 @@ func (c *ProductController) modifyProperty(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
 		return
 	}
+	
 	var product = &model.Product{
 		StoreID:    req.StoreID,
 		CategoryID: req.CategoryID,
@@ -179,6 +182,7 @@ func (c *ProductController) modifyProperty(ctx *gin.Context) {
 		PhotoUrls:  req.PhotoUrls,
 		MainTitle:  req.MainTitle,
 		Subtitle:   req.Subtitle,
+		Spec:       req.Spec,
 		Status:     req.Status,
 		Stock:      req.Stock,
 	}
