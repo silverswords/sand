@@ -14,7 +14,7 @@ type orders struct {
 
 type orderInfo struct {
 	*model.Order
-	Details *orderDetail `json:"details"`
+	*orderDetail
 }
 
 type orderDetail struct {
@@ -121,8 +121,8 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 		}
 
 		orderInfo := &orderInfo{
-			Order:   order,
-			Details: details,
+			Order:       order,
+			orderDetail: details,
 		}
 
 		orderInfos = append(orderInfos, orderInfo)
@@ -133,11 +133,11 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 
 func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
 	var (
-		detail *orderDetail
+		detail = &orderDetail{}
 		order  *model.Order
 	)
 
-	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(order).Error
+	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
 	}
 
 	err = s.GetDefaultGormDB().Model(model.UserAddress{}).Where("id = ?", order.UserAddressID).
-		Take(detail.Address).Error
+		Take(&detail.Address).Error
 	if err != nil {
 		return nil, err
 	}
