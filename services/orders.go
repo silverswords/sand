@@ -12,14 +12,34 @@ type orders struct {
 	interfaces.DatabaseAccessor
 }
 
+type address struct {
+	Name         string `json:"name"`
+	Phone        string `json:"phone"`
+	ProvinceName string `json:"province_name"`
+	CityName     string `json:"city_name"`
+	CountyName   string `json:"county_name"`
+	DetailInfo   string `json:"detail_info"`
+}
+
+type productItem struct {
+	ID        uint64  `json:"id"`
+	MainTitle string  `json:"main_title"`
+	Spec      string  `json:"spec"`
+	Price     float64 `json:"price"`
+	PhotoUrls string  `json:"photo_urls"`
+	Quantity  uint32  `json:"quantity"`
+}
+
 type orderInfo struct {
-	*model.Order
-	*orderDetail
+	ID         uint64         `json:"id"`
+	Status     uint8          `json:"status"`
+	TotalPrice float64        `json:"total_price"`
+	Products   []*productItem `json:"products"`
 }
 
 type orderDetail struct {
-	Details []*model.OrderDetail `json:"details"`
-	Address *model.UserAddress   `json:"address"`
+	*orderInfo
+	Address *address `json:"address"`
 }
 
 func CreateOrdersService(accessor interfaces.DatabaseAccessor) Orders {
@@ -107,25 +127,58 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 		orders     []*model.Order
 		orderInfos []*orderInfo
 	)
-	err := s.GetDefaultGormDB().Model(model.Order{}).
-		Where("user_id = ? And status = ?", userID, status).Order("created_at").Find(&orders).Error
 
+	err := s.GetDefaultGormDB().Model(model.Order{}).Where("user_id = ? And status = ?", userID, status).
+		Order("created_at desc").Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
 
 	for _, order := range orders {
-		details, err := s.QueryDetailsByOrderID(order.ID)
+		var (
+			details  []*model.OrderDetail
+			products []*productItem
+		)
+
+		err := s.GetDefaultGormDB().Model(model.OrderDetail{}).Where("order_id = ?", order.ID).
+			Find(&details).Error
+
 		if err != nil {
 			return nil, err
 		}
 
-		orderInfo := &orderInfo{
-			Order:       order,
-			orderDetail: details,
+		for _, detail := range details {
+			var (
+				product *model.Product
+				item    *productItem
+			)
+
+			err := s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", detail.ProductID).
+				Find(&product).Error
+
+			if err != nil {
+				return nil, err
+			}
+
+			item = &productItem{
+				ID:        product.ID,
+				MainTitle: product.MainTitle,
+				Spec:      product.Spec,
+				Price:     product.Price,
+				PhotoUrls: product.PhotoUrls,
+				Quantity:  detail.Quantity,
+			}
+
+			products = append(products, item)
 		}
 
-		orderInfos = append(orderInfos, orderInfo)
+		info := &orderInfo{
+			ID:         order.ID,
+			TotalPrice: order.TotalPrice,
+			Status:     order.Status,
+			Products:   products,
+		}
+		orderInfos = append(orderInfos, info)
 	}
 
 	return orderInfos, nil
@@ -133,8 +186,10 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 
 func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
 	var (
-		detail = &orderDetail{}
-		order  *model.Order
+		order        *model.Order
+		orderDetails []*model.OrderDetail
+		products     []*productItem
+		addr         *model.UserAddress
 	)
 
 	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
@@ -143,15 +198,60 @@ func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
 	}
 
 	err = s.GetDefaultGormDB().Model(model.OrderDetail{}).Where("order_id = ?", orderID).
-		Find(&detail.Details).Error
+		Find(&orderDetails).Error
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.GetDefaultGormDB().Model(model.UserAddress{}).Where("id = ?", order.UserAddressID).
-		Take(&detail.Address).Error
+		Take(&addr).Error
 	if err != nil {
 		return nil, err
+	}
+
+	for _, detail := range orderDetails {
+		var (
+			product *model.Product
+			item    *productItem
+		)
+
+		err = s.GetDefaultGormDB().Model(model.Product{}).Where("id = ?", detail.ProductID).
+			Take(&product).Error
+		if err != nil {
+			return nil, err
+		}
+
+		item = &productItem{
+			ID:        product.ID,
+			MainTitle: product.MainTitle,
+			Spec:      product.Spec,
+			Price:     product.Price,
+			PhotoUrls: product.PhotoUrls,
+			Quantity:  detail.Quantity,
+		}
+
+		products = append(products, item)
+	}
+
+	info := &orderInfo{
+		ID:         order.ID,
+		TotalPrice: order.TotalPrice,
+		Status:     order.Status,
+		Products:   products,
+	}
+
+	address := &address{
+		Name:         addr.UserName,
+		Phone:        addr.UserPhone,
+		ProvinceName: addr.ProvinceName,
+		CityName:     addr.CityName,
+		CountyName:   addr.CountyName,
+		DetailInfo:   addr.DetailInfo,
+	}
+
+	detail := &orderDetail{
+		orderInfo: info,
+		Address:   address,
 	}
 
 	return detail, err
