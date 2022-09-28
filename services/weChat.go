@@ -14,18 +14,18 @@ type config struct {
 }
 
 type LoginResponse struct {
-	OpenID     string
-	SessionKey string
-	UnionID    string
-	ErrCode    int
-	ErrMsg     string
+	OpenID     string `json:"openid"`
+	SessionKey string `json:"session_key"`
+	UnionID    string `json:"unionid"`
+	ErrCode    int    `json:"errcode"`
+	ErrMsg     string `json:"errmsg"`
 }
 
 type TokenResp struct {
-	AccessToken string
-	ExpiresIn   int
-	ErrCode     int
-	ErrMsg      string
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	ErrCode     int    `json:"errcode"`
+	ErrMsg      string `json:"errmsg"`
 }
 
 type weChat struct {
@@ -119,6 +119,8 @@ func (s *weChat) GetAccessToken() (string, error) {
 		if tokenResp.ErrCode != 0 {
 			return "", errors.New(tokenResp.ErrMsg)
 		}
+
+		s.token.AccessToken = tokenResp.AccessToken
 	}
 
 	return s.token.AccessToken, nil
