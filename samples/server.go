@@ -10,7 +10,7 @@ import (
 func main() {
 	sand.Instance().Load(
 		func() server.Server {
-			return web.CreateBuilder("./config/server").Build(
+			return web.CreateBuilder("../config/server.json").Build(
 				web.WithHost("localhost"),
 				web.WithAddr("8000"),
 			).Run()

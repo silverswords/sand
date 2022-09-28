@@ -23,7 +23,7 @@ type Config struct {
 func init() {
 	c := &Config{}
 
-	data, err := ioutil.ReadFile("./config/sql.json")
+	data, err := ioutil.ReadFile("../config/sql.json")
 	if err != nil {
 		panic(err)
 	}
