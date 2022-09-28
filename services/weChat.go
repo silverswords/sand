@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,6 +29,24 @@ type TokenResp struct {
 	ErrMsg      string `json:"errmsg"`
 }
 
+type PhoneResp struct {
+	ErrCode   int    `json:"errcode"`
+	ErrMsg    string `json:"errmsg"`
+	PhoneInfo struct {
+		PhoneNumber     string `json:"phone_number"`
+		PurePhoneNumber string `json:"pure_phone_number"`
+		CountryCode     string `json:"country_code"`
+		Water           struct {
+			Timestamp int    `json:"timestamp"`
+			AppID     string `json:"app_id"`
+		}
+	} `json:"phone_info"`
+}
+
+type postData struct {
+	Code string `json:"code"`
+}
+
 type weChat struct {
 	client *http.Client
 	token  *TokenResp
@@ -37,12 +56,14 @@ const (
 	code2Session = iota
 	getAccessToken
 	getUnlimited
+	getPhoneNumber
 )
 
 var url = []string{
 	"https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
 	"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
 	"https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=ACCESS_TOKEN",
+	"https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=%s",
 }
 
 func CreateWeChatService() WeChat {
@@ -124,4 +145,41 @@ func (s *weChat) GetAccessToken() (string, error) {
 	}
 
 	return s.token.AccessToken, nil
+}
+
+func (s *weChat) GetPhoneNumber(code string) (*PhoneResp, error) {
+	access_token, err := s.GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	postData := postData{
+		Code: code,
+	}
+
+	jsonData, jsonErr := json.Marshal(postData)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	url := fmt.Sprintf(url[getPhoneNumber], access_token)
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var phoneResp PhoneResp
+	if err := json.Unmarshal(buf, &phoneResp); err != nil {
+		return nil, err
+	}
+
+	return &phoneResp, nil
 }
