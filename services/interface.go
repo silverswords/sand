@@ -43,17 +43,17 @@ type Category interface {
 type Orders interface {
 	Create(*model.Order, []*model.OrderDetail, *model.UserAddress, bool) error
 	QueryByUserIDAndStatus(uint64, uint8) ([]*orderInfo, error)
-	QueryDetailsByOrderID(uint64) (*orderDetail, error)
-	ModifyStatus(uint64, uint8) error
-	ModifyAddress(uint64, *model.UserAddress) error
-	Delete(uint64) error
+	QueryDetailsByOrderID(uint64, uint64) (*orderDetail, error)
+	ModifyStatus(uint64, uint64, uint8) error
+	ModifyAddress(uint64, uint64, *model.UserAddress) error
+	Delete(uint64, uint64) error
 }
 
 type ShoppingCarts interface {
 	Create(*model.CartItem) error
 	Query(uint64) ([]*itemInfo, error)
-	Delete(itemIDs []uint64) error
-	ModifyQuantity(uint64, uint32) error
+	Delete(uint64, []uint64) error
+	ModifyQuantity(uint64, uint64, uint32) error
 }
 
 type VirtualStore interface {
@@ -67,4 +67,5 @@ type Dynamic interface {
 type WeChat interface {
 	Login(string) (*LoginResponse, error)
 	GetAccessToken() (string, error)
+	GetPhoneNumber(string) (*PhoneResp, error)
 }

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/silverswords/sand/core/interfaces"
@@ -55,6 +56,11 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail, a *model.UserAdd
 			isExist   bool
 			err       error
 		)
+
+		err = tx.Model(model.UserAddress{}).Where("user_id = ?", a.UserID).Find(&addresses).Error
+		if err != nil {
+			return err
+		}
 
 		for _, address := range addresses {
 			if address.UserName == a.UserName && address.UserPhone == a.UserPhone &&
@@ -111,13 +117,7 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail, a *model.UserAdd
 					return err
 				}
 			}
-
-			err = tx.Model(model.UserAddress{}).Where("user_id = ?", a.UserID).Find(&addresses).Error
-			if err != nil {
-				return err
-			}
 		}
-
 		return nil
 	})
 }
@@ -184,15 +184,33 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 	return orderInfos, nil
 }
 
-func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
+func (s *orders) QueryDetailsByOrderID(userID uint64, orderID uint64) (*orderDetail, error) {
 	var (
 		order        *model.Order
+		orders       []*model.Order
 		orderDetails []*model.OrderDetail
 		products     []*productItem
 		addr         *model.UserAddress
+		orderIsExist bool
+		err          error
 	)
 
-	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
+	err = s.GetDefaultGormDB().Model(model.Order{}).Where("user_id = ?", userID).Find(&orders).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for _, order := range orders {
+		if order.ID == orderID {
+			orderIsExist = true
+		}
+	}
+
+	if !orderIsExist {
+		return nil, errors.New("order does not exist for this user")
+	}
+
+	err = s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
 	if err != nil {
 		return nil, err
 	}
@@ -257,11 +275,21 @@ func (s *orders) QueryDetailsByOrderID(orderID uint64) (*orderDetail, error) {
 	return detail, err
 }
 
-func (s *orders) ModifyStatus(id uint64, status uint8) error {
-	return s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", id).Update("status", status).Error
+func (s *orders) ModifyStatus(userID uint64, orderID uint64, status uint8) error {
+	result := s.GetDefaultGormDB().Model(model.Order{}).Where("user_id = ? AND id = ?", userID, orderID).
+		Update("status", status)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
 }
 
-func (s *orders) ModifyAddress(orderID uint64, a *model.UserAddress) error {
+func (s *orders) ModifyAddress(userID uint64, orderID uint64, a *model.UserAddress) error {
 	var order *model.Order
 
 	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
@@ -272,15 +300,20 @@ func (s *orders) ModifyAddress(orderID uint64, a *model.UserAddress) error {
 	return s.GetDefaultGormDB().Model(model.UserAddress{}).Where("id = ?", order.UserAddressID).Updates(a).Error
 }
 
-func (s *orders) Delete(orderID uint64) error {
+func (s *orders) Delete(userID uint64, orderID uint64) error {
 	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
 		var (
 			orderDetails []*model.OrderDetail
+			err          error
 		)
 
-		err := tx.Model(model.Order{}).Delete(model.Order{}, orderID).Error
-		if err != nil {
-			return err
+		result := tx.Model(model.Order{}).Where("user_id = ?", userID).Delete(model.Order{}, orderID)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if result.RowsAffected == 0 {
+			return errInvalidNoRowsAffected
 		}
 
 		err = tx.Model(model.OrderDetail{}).Where("order_id = ?", orderID).Find(&orderDetails).Error

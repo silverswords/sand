@@ -79,6 +79,7 @@ func (c *CartController) info(ctx *gin.Context) {
 func (s *CartController) delete(ctx *gin.Context) {
 	var (
 		req struct {
+			UserID uint64   `json:"user_id"`
 			ItemID []uint64 `json:"item_ids"`
 		}
 		err error
@@ -91,7 +92,7 @@ func (s *CartController) delete(ctx *gin.Context) {
 		return
 	}
 
-	err = sand.GetApplication().Services().ShoppingCarts().Delete(req.ItemID)
+	err = sand.GetApplication().Services().ShoppingCarts().Delete(req.UserID, req.ItemID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -104,6 +105,7 @@ func (s *CartController) delete(ctx *gin.Context) {
 func (s *CartController) modifyQuantity(ctx *gin.Context) {
 	var (
 		req struct {
+			UserID   uint64 `json:"user_id"`
 			ItemID   uint64 `json:"item_id"`
 			Quantity uint32 `json:"quantity"`
 		}
@@ -117,7 +119,7 @@ func (s *CartController) modifyQuantity(ctx *gin.Context) {
 		return
 	}
 
-	err = sand.GetApplication().Services().ShoppingCarts().ModifyQuantity(req.ItemID, req.Quantity)
+	err = sand.GetApplication().Services().ShoppingCarts().ModifyQuantity(req.UserID, req.ItemID, req.Quantity)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})

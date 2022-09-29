@@ -61,11 +61,30 @@ func (s *shoppingCarts) Query(user_id uint64) ([]*itemInfo, error) {
 	return itemInfos, nil
 }
 
-func (s *shoppingCarts) Delete(itemIDs []uint64) error {
-	return s.GetDefaultGormDB().Model(model.CartItem{}).Delete(&model.CartItem{}, &itemIDs).Error
+func (s *shoppingCarts) Delete(userID uint64, itemIDs []uint64) error {
+	result := s.GetDefaultGormDB().Model(model.CartItem{}).Where("user_id = ?", userID).
+		Delete(&model.CartItem{}, &itemIDs)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
 }
 
-func (s *shoppingCarts) ModifyQuantity(itemID uint64, quantity uint32) error {
-	return s.GetDefaultGormDB().Model(model.CartItem{}).Where("id = ?", itemID).
-		Update("quantity", quantity).Error
+func (s *shoppingCarts) ModifyQuantity(userID uint64, itemID uint64, quantity uint32) error {
+	result := s.GetDefaultGormDB().Model(model.CartItem{}).Where("user_id = ? AND id = ?", userID, itemID).
+		Update("quantity", quantity)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errInvalidNoRowsAffected
+	}
+
+	return nil
 }
