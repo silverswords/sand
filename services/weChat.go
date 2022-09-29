@@ -43,10 +43,6 @@ type PhoneResp struct {
 	} `json:"phone_info"`
 }
 
-type postData struct {
-	Code string `json:"code"`
-}
-
 type weChat struct {
 	client *http.Client
 	token  *TokenResp
@@ -57,6 +53,8 @@ const (
 	getAccessToken
 	getUnlimited
 	getPhoneNumber
+	createOrder
+	notify
 )
 
 var url = []string{
@@ -64,6 +62,8 @@ var url = []string{
 	"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
 	"https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=ACCESS_TOKEN",
 	"https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=%s",
+	"https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi",
+	"https://",
 }
 
 func CreateWeChatService() WeChat {
@@ -153,9 +153,13 @@ func (s *weChat) GetPhoneNumber(code string) (*PhoneResp, error) {
 		return nil, err
 	}
 
-	postData := postData{
-		Code: code,
-	}
+	var (
+		postData struct {
+			Code string `json:"code"`
+		}
+		phoneResp PhoneResp
+	)
+	postData.Code = code
 
 	jsonData, jsonErr := json.Marshal(postData)
 	if jsonErr != nil {
@@ -176,10 +180,67 @@ func (s *weChat) GetPhoneNumber(code string) (*PhoneResp, error) {
 		return nil, err
 	}
 
-	var phoneResp PhoneResp
 	if err := json.Unmarshal(buf, &phoneResp); err != nil {
 		return nil, err
 	}
 
 	return &phoneResp, nil
+}
+
+func (s *weChat) GetPrepayID(description string, outTradeNo string, total int, openID string) (string, error) {
+	config := getConfig()
+
+	var (
+		postData struct {
+			AppID       string `json:"appid"`
+			Mchid       string `json:"mchid"`
+			Description string `json:"description"`
+			OutTradeNo  string `json:"out_trade_no"`
+			NotifyUrl   string `json:"notify_url"`
+			Amount      struct {
+				Total int `json:"total"`
+			} `json:"amount"`
+			Payer struct {
+				OpenID string `json:"openid"`
+			} `json:"payer"`
+		}
+		prepayResp struct {
+			PrepayID string `json:"prepay_id"`
+		}
+	)
+
+	postData.AppID = config.AppID
+	postData.Description = description
+	postData.OutTradeNo = outTradeNo
+	postData.Amount.Total = total
+	postData.Payer.OpenID = openID
+	postData.NotifyUrl = url[notify]
+
+	jsonData, jsonErr := json.Marshal(postData)
+	if jsonErr != nil {
+		return "", jsonErr
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url[createOrder], bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if err := json.Unmarshal(buf, &prepayResp); err != nil {
+		return "", err
+	}
+
+	return prepayResp.PrepayID, nil
 }

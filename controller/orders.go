@@ -32,13 +32,14 @@ func (c *OrderController) create(ctx *gin.Context) {
 			FromCart     bool          `json:"from_cart,omitempty"`
 			UserID       uint64        `json:"user_id,omitempty"`
 			TotalPrice   float64       `json:"total_price,omitempty"`
-			Details      []orderDetail `json:"details,omitempty"`
 			Name         string        `json:"name,omitempty"`
 			Phone        string        `json:"phone,omitempty"`
 			ProvinceName string        `json:"province_name,omitempty"`
 			CityName     string        `json:"city_name,omitempty"`
 			CountyName   string        `json:"county_name,omitempty"`
 			DetailInfo   string        `json:"detail_info,omitempty"`
+			Description  string        `json:"description,omitempty"`
+			Details      []orderDetail `json:"details,omitempty"`
 		}
 		orderDetails []*model.OrderDetail
 		err          error
@@ -82,7 +83,22 @@ func (c *OrderController) create(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "order_id": order.ID})
+	user, err := sand.GetApplication().Services().Users().QueryByID(req.UserID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
+	prepayID, err := sand.GetApplication().Services().WeChat().GetPrepayID(req.Description, string(order.ID),
+		int(order.TotalPrice), user.OpenID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "prepay_id": prepayID})
 }
 
 func (c *OrderController) modifyStatus(ctx *gin.Context) {

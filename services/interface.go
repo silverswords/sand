@@ -16,6 +16,7 @@ type Service interface {
 
 type Users interface {
 	Create(*model.User) error
+	QueryByID(uint64) (*model.User, error)
 	QueryByOpenID(string) (*model.User, error)
 	Update(*model.User) error
 }
@@ -68,4 +69,9 @@ type WeChat interface {
 	Login(string) (*LoginResponse, error)
 	GetAccessToken() (string, error)
 	GetPhoneNumber(string) (*PhoneResp, error)
+	GetPrepayID(string, string, int, string) (string, error)
+}
+
+type Sign interface {
+	GetSignedInfo(string, string) (*PayInfo, error)
 }

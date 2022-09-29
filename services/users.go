@@ -26,6 +26,13 @@ func (s *users) QueryByOpenID(openID string) (*model.User, error) {
 	return user, err
 }
 
+func (s *users) QueryByID(userID uint64) (*model.User, error) {
+	var user *model.User
+	err := s.GetDefaultGormDB().Model(model.User{}).Where("id = ?", userID).First(&user).Error
+
+	return user, err
+}
+
 func (s *users) Update(u *model.User) error {
 	return s.GetDefaultGormDB().Model(model.User{}).Where("id = ?", u.ID).Updates(u).Error
 }
