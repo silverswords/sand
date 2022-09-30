@@ -1,19 +1,65 @@
 package services
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/silverswords/sand/utils"
 )
 
+const (
+	privateFilePath = "config/apiclient_key.pem"
+)
+
 type sign struct {
+	privateKey *rsa.PrivateKey
 }
 
-func CreateSignService() Sign {
-	return &sign{}
+func CreateSignService() (Sign, error) {
+	privateKey, err := getPrivateKey()
+	if err != nil {
+		return nil, err
+	}
+
+	sign := &sign{privateKey: privateKey}
+	return sign, nil
+}
+
+func getPrivateKey() (*rsa.PrivateKey, error) {
+	file, err := os.Open(privateFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	pemBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	block, _ := pem.Decode(pemBytes)
+	if block == nil {
+		return nil, errors.New("private key error")
+	}
+
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse private key err:%s", err.Error())
+	}
+
+	privateKey, ok := key.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("privateFile is not rsa private key")
+	}
+
+	return privateKey, nil
 }
 
 type PayInfo struct {
@@ -29,7 +75,7 @@ func (s *sign) GetSignedInfo(prepayID string, appID string) (*PayInfo, error) {
 	var (
 		payInfo *PayInfo
 	)
-	nonceStr, err := utils.RandString(20)
+	nonceStr, err := utils.GenerateNonce()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +83,7 @@ func (s *sign) GetSignedInfo(prepayID string, appID string) (*PayInfo, error) {
 	timeStamp := time.Now().Unix()
 	_package := "prepay_id=" + prepayID
 	message := fmt.Sprintf("%s\n%d\n%s\n%s\n", appID, timeStamp, nonceStr, _package)
-	paySign, err := utils.Sign(message, []byte{})
+	paySign, err := utils.SignSHA256WithRSA(message, s.privateKey)
 	if err != nil {
 		return nil, err
 	}
