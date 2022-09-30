@@ -5,20 +5,21 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
-	"crypto/x509"
+	"fmt"
 )
 
-func Sign(data string, privateKeyBytes []byte) ([]byte, error) {
+func SignSHA256WithRSA(source string, privateKey *rsa.PrivateKey) ([]byte, error) {
+	if privateKey == nil {
+		return nil, fmt.Errorf("private key should not be nil")
+	}
+
 	h := sha256.New()
-	h.Write([]byte(data))
-
-	hashed := h.Sum(nil)
-
-	privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBytes)
+	_, err := h.Write([]byte(source))
 	if err != nil {
 		return nil, err
 	}
 
+	hashed := h.Sum(nil)
 	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed)
 	if err != nil {
 		return nil, err
