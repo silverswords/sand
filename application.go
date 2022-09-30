@@ -45,12 +45,16 @@ func init() {
 	productsService := services.CreateProductsService(application)
 	categoryService := services.CreateCategoryService(application)
 	ordersService := services.CreateOrdersService(application)
-	shoppingCartsService := services.CreateShoppingCartsService(application)
+	shoppingCartsService := services.CreateCartsService(application)
 	virtualStore := services.CreateVirtualStoreService(application)
 	weChat := services.CreateWeChatService()
+	sign, err := services.CreateSignService()
+	if err != nil {
+		panic(err)
+	}
 
 	service := services.CreateService(usersService, productsService, categoryService,
-		ordersService, shoppingCartsService, virtualStore, weChat)
+		ordersService, shoppingCartsService, virtualStore, weChat, sign)
 	application.SetServices(&service)
 }
 

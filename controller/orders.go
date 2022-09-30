@@ -77,21 +77,21 @@ func (c *OrderController) create(ctx *gin.Context) {
 		orderDetails = append(orderDetails, orderDetail)
 	}
 
-	if err = sand.GetApplication().Services().Orders().Create(order, orderDetails, address, req.FromCart); err != nil {
+	if err = sand.GetApplication().Services().OrdersCreate(order, orderDetails, address, req.FromCart); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
-	user, err := sand.GetApplication().Services().Users().QueryByID(req.UserID)
+	user, err := sand.GetApplication().Services().UsersQueryByID(req.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
-	prepayID, err := sand.GetApplication().Services().WeChat().GetPrepayID(req.Description, string(order.ID),
-		int(order.TotalPrice), user.OpenID)
+	prepayID, err := sand.GetApplication().Services().GetPrepayID(req.Description,
+		string(order.ID), int(order.TotalPrice), user.OpenID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -118,7 +118,7 @@ func (c *OrderController) modifyStatus(ctx *gin.Context) {
 		return
 	}
 
-	if err = sand.GetApplication().Services().Orders().ModifyStatus(req.UserID, req.OrderID, req.Status); err != nil {
+	if err = sand.GetApplication().Services().OrdersModifyStatus(req.UserID, req.OrderID, req.Status); err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
@@ -143,7 +143,7 @@ func (c *OrderController) listOrdersByUserIDAndStatus(ctx *gin.Context) {
 		return
 	}
 
-	orderInfos, err := sand.GetApplication().Services().Orders().QueryByUserIDAndStatus(req.UserID, req.Status)
+	orderInfos, err := sand.GetApplication().Services().OrdersQueryByUserIDAndStatus(req.UserID, req.Status)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -168,7 +168,7 @@ func (c *OrderController) detailByOrderID(ctx *gin.Context) {
 		return
 	}
 
-	orderDetail, err := sand.GetApplication().Services().Orders().QueryDetailsByOrderID(req.UserID, req.OrderID)
+	orderDetail, err := sand.GetApplication().Services().OrdersQueryDetailsByOrderID(req.UserID, req.OrderID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -194,7 +194,7 @@ func (c *OrderController) delete(ctx *gin.Context) {
 		return
 	}
 
-	err = sand.GetApplication().Services().Orders().Delete(req.UserID, req.OrderID)
+	err = sand.GetApplication().Services().OrdersDelete(req.UserID, req.OrderID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -235,7 +235,7 @@ func (c *OrderController) modifyAddress(ctx *gin.Context) {
 		DetailInfo:   req.DetailInfo,
 	}
 
-	err = sand.GetApplication().Services().Orders().ModifyAddress(req.UserID, req.OrderID, address)
+	err = sand.GetApplication().Services().OrdersModifyAddress(req.UserID, req.OrderID, address)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})

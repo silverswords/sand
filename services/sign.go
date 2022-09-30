@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	privateFilePath = "config/apiclient_key.pem"
+	privateFilePath = "../config/apiclient_key.pem"
 )
 
 type sign struct {

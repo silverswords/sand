@@ -15,7 +15,7 @@ func CreateVirtualStoreService(accessor interfaces.DatabaseAccessor) VirtualStor
 	}
 }
 
-func (s virtualstore) Create(vs *model.VirtualStore) error {
+func (s virtualstore) VirtualStoreCreate(vs *model.VirtualStore) error {
 	return s.GetDefaultGormDB().Model(model.VirtualStore{}).Create(vs).Error
 }
 

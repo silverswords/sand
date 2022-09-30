@@ -5,7 +5,7 @@ import (
 	"github.com/silverswords/sand/model"
 )
 
-type shoppingCarts struct {
+type carts struct {
 	interfaces.DatabaseAccessor
 }
 
@@ -17,17 +17,17 @@ type itemInfo struct {
 	TotalPrice float64 `json:"total_price"`
 }
 
-func CreateShoppingCartsService(accessor interfaces.DatabaseAccessor) ShoppingCarts {
-	return &shoppingCarts{
+func CreateCartsService(accessor interfaces.DatabaseAccessor) Carts {
+	return &carts{
 		DatabaseAccessor: accessor,
 	}
 }
 
-func (s *shoppingCarts) Create(sc *model.CartItem) error {
+func (s *carts) CartsCreate(sc *model.CartItem) error {
 	return s.GetDefaultGormDB().Model(model.CartItem{}).Create(sc).Error
 }
 
-func (s *shoppingCarts) Query(user_id uint64) ([]*itemInfo, error) {
+func (s *carts) CartsQuery(user_id uint64) ([]*itemInfo, error) {
 	var (
 		cartItems []*model.CartItem
 		product   *model.Product
@@ -61,7 +61,7 @@ func (s *shoppingCarts) Query(user_id uint64) ([]*itemInfo, error) {
 	return itemInfos, nil
 }
 
-func (s *shoppingCarts) Delete(userID uint64, itemIDs []uint64) error {
+func (s *carts) CartsDelete(userID uint64, itemIDs []uint64) error {
 	result := s.GetDefaultGormDB().Model(model.CartItem{}).Where("user_id = ?", userID).
 		Delete(&model.CartItem{}, &itemIDs)
 	if result.Error != nil {
@@ -75,7 +75,7 @@ func (s *shoppingCarts) Delete(userID uint64, itemIDs []uint64) error {
 	return nil
 }
 
-func (s *shoppingCarts) ModifyQuantity(userID uint64, itemID uint64, quantity uint32) error {
+func (s *carts) CartsModifyQuantity(userID uint64, itemID uint64, quantity uint32) error {
 	result := s.GetDefaultGormDB().Model(model.CartItem{}).Where("user_id = ? AND id = ?", userID, itemID).
 		Update("quantity", quantity)
 	if result.Error != nil {

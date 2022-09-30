@@ -41,7 +41,7 @@ func (c *CartController) create(ctx *gin.Context) {
 		Quantity:  req.Quantity,
 	}
 
-	err = sand.GetApplication().Services().ShoppingCarts().Create(item)
+	err = sand.GetApplication().Services().CartsCreate(item)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
@@ -66,7 +66,7 @@ func (c *CartController) info(ctx *gin.Context) {
 		return
 	}
 
-	infos, err := sand.GetApplication().Services().ShoppingCarts().Query(req.UserID)
+	infos, err := sand.GetApplication().Services().CartsQuery(req.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -92,7 +92,7 @@ func (s *CartController) delete(ctx *gin.Context) {
 		return
 	}
 
-	err = sand.GetApplication().Services().ShoppingCarts().Delete(req.UserID, req.ItemID)
+	err = sand.GetApplication().Services().CartsDelete(req.UserID, req.ItemID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -119,7 +119,7 @@ func (s *CartController) modifyQuantity(ctx *gin.Context) {
 		return
 	}
 
-	err = sand.GetApplication().Services().ShoppingCarts().ModifyQuantity(req.UserID, req.ItemID, req.Quantity)
+	err = sand.GetApplication().Services().CartsModifyQuantity(req.UserID, req.ItemID, req.Quantity)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})

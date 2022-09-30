@@ -33,14 +33,14 @@ func (c *UserController) login(ctx *gin.Context) {
 		return
 	}
 
-	loginResp, err := sand.GetApplication().Services().WeChat().Login(req.Code)
+	loginResp, err := sand.GetApplication().Services().Login(req.Code)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
 
-	user, err := sand.GetApplication().Services().Users().QueryByOpenID(loginResp.OpenID)
+	user, err := sand.GetApplication().Services().UsersQueryByOpenID(loginResp.OpenID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -49,7 +49,7 @@ func (c *UserController) login(ctx *gin.Context) {
 
 	if user.ID == 0 {
 		user = &model.User{UnionID: loginResp.UnionID, OpenID: loginResp.OpenID}
-		err = sand.GetApplication().Services().Users().Create(user)
+		err = sand.GetApplication().Services().UsersCreate(user)
 		if err != nil {
 			ctx.Error(err)
 			ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
@@ -68,7 +68,7 @@ func (c *UserController) getUserInfo(ctx *gin.Context) {
 		return
 	}
 
-	info, err := sand.GetApplication().Services().Users().QueryByOpenID(value)
+	info, err := sand.GetApplication().Services().UsersQueryByOpenID(value)
 	if err != nil {
 		ctx.Error(err)
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})

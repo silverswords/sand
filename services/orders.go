@@ -49,7 +49,7 @@ func CreateOrdersService(accessor interfaces.DatabaseAccessor) Orders {
 	}
 }
 
-func (s *orders) Create(o *model.Order, d []*model.OrderDetail, a *model.UserAddress, fromCart bool) error {
+func (s *orders) OrdersCreate(o *model.Order, d []*model.OrderDetail, a *model.UserAddress, fromCart bool) error {
 	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
 		var (
 			addresses []*model.UserAddress
@@ -122,7 +122,7 @@ func (s *orders) Create(o *model.Order, d []*model.OrderDetail, a *model.UserAdd
 	})
 }
 
-func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderInfo, error) {
+func (s *orders) OrdersQueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderInfo, error) {
 	var (
 		orders     []*model.Order
 		orderInfos []*orderInfo
@@ -184,7 +184,7 @@ func (s *orders) QueryByUserIDAndStatus(userID uint64, status uint8) ([]*orderIn
 	return orderInfos, nil
 }
 
-func (s *orders) QueryDetailsByOrderID(userID uint64, orderID uint64) (*orderDetail, error) {
+func (s *orders) OrdersQueryDetailsByOrderID(userID uint64, orderID uint64) (*orderDetail, error) {
 	var (
 		order        *model.Order
 		orders       []*model.Order
@@ -275,7 +275,7 @@ func (s *orders) QueryDetailsByOrderID(userID uint64, orderID uint64) (*orderDet
 	return detail, err
 }
 
-func (s *orders) ModifyStatus(userID uint64, orderID uint64, status uint8) error {
+func (s *orders) OrdersModifyStatus(userID uint64, orderID uint64, status uint8) error {
 	result := s.GetDefaultGormDB().Model(model.Order{}).Where("user_id = ? AND id = ?", userID, orderID).
 		Update("status", status)
 	if result.Error != nil {
@@ -289,7 +289,7 @@ func (s *orders) ModifyStatus(userID uint64, orderID uint64, status uint8) error
 	return nil
 }
 
-func (s *orders) ModifyAddress(userID uint64, orderID uint64, a *model.UserAddress) error {
+func (s *orders) OrdersModifyAddress(userID uint64, orderID uint64, a *model.UserAddress) error {
 	var order *model.Order
 
 	err := s.GetDefaultGormDB().Model(model.Order{}).Where("id = ?", orderID).Take(&order).Error
@@ -300,7 +300,7 @@ func (s *orders) ModifyAddress(userID uint64, orderID uint64, a *model.UserAddre
 	return s.GetDefaultGormDB().Model(model.UserAddress{}).Where("id = ?", order.UserAddressID).Updates(a).Error
 }
 
-func (s *orders) Delete(userID uint64, orderID uint64) error {
+func (s *orders) OrdersDelete(userID uint64, orderID uint64) error {
 	return s.GetDefaultGormDB().Transaction(func(tx *gorm.DB) error {
 		var (
 			orderDetails []*model.OrderDetail
