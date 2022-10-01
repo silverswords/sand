@@ -31,7 +31,7 @@ func (c *OrderController) create(ctx *gin.Context) {
 		req struct {
 			FromCart     bool          `json:"from_cart,omitempty"`
 			UserID       uint64        `json:"user_id,omitempty"`
-			TotalPrice   float64       `json:"total_price,omitempty"`
+			TotalPrice   uint32        `json:"total_price,omitempty"`
 			Name         string        `json:"name,omitempty"`
 			Phone        string        `json:"phone,omitempty"`
 			ProvinceName string        `json:"province_name,omitempty"`
@@ -90,7 +90,7 @@ func (c *OrderController) create(ctx *gin.Context) {
 		return
 	}
 
-	prepayID, err := sand.GetApplication().Services().GetPrepayID(req.Description,
+	prepayID, appID, err := sand.GetApplication().Services().GetPrepayInfo(req.Description,
 		string(order.ID), int(order.TotalPrice), user.OpenID)
 	if err != nil {
 		ctx.Error(err)
@@ -98,7 +98,14 @@ func (c *OrderController) create(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "prepay_id": prepayID})
+	prepayInfo, err := sand.GetApplication().Services().GetSignedInfo(prepayID, appID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "prepay_info": prepayInfo})
 }
 
 func (c *OrderController) modifyStatus(ctx *gin.Context) {

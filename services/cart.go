@@ -10,11 +10,11 @@ type carts struct {
 }
 
 type itemInfo struct {
-	MainTitle  string  `json:"main_title"`
-	Price      float64 `json:"price"`
-	Quantity   uint32  `json:"quantity"`
-	PhotoUrls  string  `json:"photo_urls"`
-	TotalPrice float64 `json:"total_price"`
+	MainTitle  string `json:"main_title"`
+	Price      uint32 `json:"price"`
+	Quantity   uint32 `json:"quantity"`
+	PhotoUrls  string `json:"photo_urls"`
+	TotalPrice uint32 `json:"total_price"`
 }
 
 func CreateCartsService(accessor interfaces.DatabaseAccessor) Carts {
@@ -52,7 +52,7 @@ func (s *carts) CartsQuery(user_id uint64) ([]*itemInfo, error) {
 			Price:      product.Price,
 			Quantity:   cartItem.Quantity,
 			PhotoUrls:  product.PhotoUrls,
-			TotalPrice: product.Price * float64(cartItem.Quantity),
+			TotalPrice: product.Price * cartItem.Quantity,
 		}
 
 		itemInfos = append(itemInfos, info)

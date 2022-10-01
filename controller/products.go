@@ -23,15 +23,15 @@ func (c *ProductController) RegisterRouter(r gin.IRouter) {
 func (c *ProductController) create(ctx *gin.Context) {
 	var (
 		req struct {
-			StoreID    uint64  `json:"store_id,omitempty"`
-			CategoryID uint64  `json:"category_id,omitempty"`
-			Price      float64 `json:"price,omitempty"`
-			PhotoUrls  string  `json:"photo_urls,omitempty"`
-			MainTitle  string  `json:"main_title,omitempty"`
-			Subtitle   string  `json:"subtitle,omitempty"`
-			Spec       string  `json:"spec,omitempty"`
-			Status     uint8   `json:"status,omitempty"`
-			Stock      uint32  `json:"stock,omitempty"`
+			StoreID    uint64 `json:"store_id,omitempty"`
+			CategoryID uint64 `json:"category_id,omitempty"`
+			Price      uint32 `json:"price,omitempty"`
+			PhotoUrls  string `json:"photo_urls,omitempty"`
+			MainTitle  string `json:"main_title,omitempty"`
+			Subtitle   string `json:"subtitle,omitempty"`
+			Spec       string `json:"spec,omitempty"`
+			Status     uint8  `json:"status,omitempty"`
+			Stock      uint32 `json:"stock,omitempty"`
 		}
 	)
 
@@ -155,16 +155,16 @@ func (c *ProductController) listByStoreID(ctx *gin.Context) {
 func (c *ProductController) modifyProperty(ctx *gin.Context) {
 	var (
 		req struct {
-			ID         uint64  `json:"id,omitempty"`
-			StoreID    uint64  `json:"store_id,omitempty"`
-			CategoryID uint64  `json:"category_id,omitempty"`
-			Price      float64 `json:"price,omitempty"`
-			PhotoUrls  string  `json:"photo_urls,omitempty"`
-			MainTitle  string  `json:"main_title,omitempty"`
-			Subtitle   string  `json:"subtitle,omitempty"`
-			Spec       string  `json:"spec,omitempty"`
-			Status     uint8   `json:"status,omitempty"`
-			Stock      uint32  `json:"stock,omitempty"`
+			ID         uint64 `json:"id,omitempty"`
+			StoreID    uint64 `json:"store_id,omitempty"`
+			CategoryID uint64 `json:"category_id,omitempty"`
+			Price      uint32 `json:"price,omitempty"`
+			PhotoUrls  string `json:"photo_urls,omitempty"`
+			MainTitle  string `json:"main_title,omitempty"`
+			Subtitle   string `json:"subtitle,omitempty"`
+			Spec       string `json:"spec,omitempty"`
+			Status     uint8  `json:"status,omitempty"`
+			Stock      uint32 `json:"stock,omitempty"`
 		}
 	)
 

@@ -19,7 +19,7 @@ type Order struct {
 	Model
 	UserID        uint64    `gorm:"not null"`
 	UserAddressID uint64    `gorm:"not null"`
-	TotalPrice    float64   `gorm:"precision:8;scale:2;not null"`
+	TotalPrice    uint32    `gorm:"not null"`
 	Status        uint8     `gorm:"not null;default:0"`
 	PayTime       time.Time `gorm:"default:null"`
 }
@@ -34,15 +34,15 @@ type OrderDetail struct {
 
 type Product struct {
 	Model
-	StoreID    uint64  `gorm:"not null;default:0"`
-	CategoryID uint64  `gorm:"not null"`
-	Price      float64 `gorm:"precision:8;scale:2;not null"`
-	Spec       string  `gorm:"varchar(64);not null"`
-	PhotoUrls  string  `gorm:"type:json"`
-	MainTitle  string  `gorm:"type:varchar(256)"`
-	Subtitle   string  `gorm:"type:varchar(256)"`
-	Status     uint8   `gorm:"not null"`
-	Stock      uint32  `gorm:"not null"`
+	StoreID    uint64 `gorm:"not null;default:0"`
+	CategoryID uint64 `gorm:"not null"`
+	Price      uint32 `gorm:"not null"`
+	Spec       string `gorm:"varchar(64);not null"`
+	PhotoUrls  string `gorm:"type:json"`
+	MainTitle  string `gorm:"type:varchar(256)"`
+	Subtitle   string `gorm:"type:varchar(256)"`
+	Status     uint8  `gorm:"not null"`
+	Stock      uint32 `gorm:"not null"`
 }
 
 type CartItem struct {

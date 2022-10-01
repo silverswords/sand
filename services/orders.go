@@ -23,18 +23,18 @@ type address struct {
 }
 
 type productItem struct {
-	ID        uint64  `json:"id"`
-	MainTitle string  `json:"main_title"`
-	Spec      string  `json:"spec"`
-	Price     float64 `json:"price"`
-	PhotoUrls string  `json:"photo_urls"`
-	Quantity  uint32  `json:"quantity"`
+	ID        uint64 `json:"id"`
+	MainTitle string `json:"main_title"`
+	Spec      string `json:"spec"`
+	Price     uint32 `json:"price"`
+	PhotoUrls string `json:"photo_urls"`
+	Quantity  uint32 `json:"quantity"`
 }
 
 type orderInfo struct {
 	ID         uint64         `json:"id"`
 	Status     uint8          `json:"status"`
-	TotalPrice float64        `json:"total_price"`
+	TotalPrice uint32         `json:"total_price"`
 	Products   []*productItem `json:"products"`
 }
 

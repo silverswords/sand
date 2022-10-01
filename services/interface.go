@@ -70,7 +70,7 @@ type WeChat interface {
 	Login(string) (*LoginResponse, error)
 	GetAccessToken() (string, error)
 	GetPhoneNumber(string) (*PhoneResp, error)
-	GetPrepayID(string, string, int, string) (string, error)
+	GetPrepayInfo(string, string, int, string) (string, string, error)
 }
 
 type Sign interface {
