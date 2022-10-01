@@ -48,7 +48,7 @@ func init() {
 	shoppingCartsService := services.CreateCartsService(application)
 	virtualStore := services.CreateVirtualStoreService(application)
 	weChat := services.CreateWeChatService()
-	sign, err := services.CreateSignService()
+	sign := services.CreateSignService()
 	if err != nil {
 		panic(err)
 	}
